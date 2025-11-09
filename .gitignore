@@ -4,7 +4,9 @@ node_modules/
 
 .env
 
-venv
+.venv/
+
+venv/
 
 .idea/
 
@@ -14,6 +16,10 @@ __pycache__/
 
 *.py[cod]
 
-conday_env.yml
+*.pdb
+
+.conda/
+
+*.swp
 
 *$py.class
