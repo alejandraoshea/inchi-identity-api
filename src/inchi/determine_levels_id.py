@@ -3,7 +3,6 @@ from rdkit.Chem import rdFMCS
 from rdkit.Chem.SaltRemover import SaltRemover
 
 class InChi:
-
     def mol_from_inchi(inchi: str):
         try:
             mol = Chem.MolFromInchi(inchi)

@@ -1,0 +1,62 @@
+import unittest
+from inchi.inchi_parser import InChiParser
+
+class TestInChI(unittest.TestCase):
+    def test_getMainLayer(self):
+        self.assertEqual(InChiParser.getMainLayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"), "C6H6")
+        self.assertEqual(InChiParser.getMainLayer("InChI=1S/C2H6O/i1+1/h1H2"), "C2H6O")
+        self.assertEqual(InChiParser.getMainLayer("InChI=1/C3H6O/c1-3(2)4/h1-2H3/f/h1H"), "C3H6O")
+
+    def test_getAtomConnectionsLayerSublayer(self):
+        self.assertEqual(InChiParser.getAtomConnectionsLayerSublayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"), "c1-2-4-6-5-3-1")
+        self.assertTrue(InChiParser.getAtomConnectionsLayerSublayer("InChI=1S/C2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1/rC2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1").startswith("c"))
+
+    def test_getHydrogenAtomsSublayer(self):
+        self.assertEqual(InChiParser.getHydrogenAtomsSublayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"), "h1-6H")
+        self.assertEqual(InChiParser.getHydrogenAtomsSublayer("InChI=1S/C2H6O/i1+1/h1H2"), "h1H2")
+
+    def test_getChargeSublayer(self):
+        self.assertEqual(InChiParser.getChargeSublayer("InChI=1S/H3O+/h1H2/q+1"), "q+1")
+        self.assertIsNone(InChiParser.getChargeSublayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+
+    def test_getProtonSublayer(self):
+        self.assertEqual(InChiParser.getProtonSublayer("InChI=1S/C2H4O/q-1/p+1"), "p+1")
+        self.assertIsNone(InChiParser.getProtonSublayer("InChI=1S/H3O+/h1H2/q+1"))
+
+    def test_getDoubleBondsSublayer(self):
+        self.assertEqual(InChiParser.getDoubleBondsSublayer("InChI=1S/C2H4/b1-2/h1-2H2"), "b1-2")
+        self.assertEqual(InChiParser.getDoubleBondsSublayer("InChI=1S/C3H8/i2+2/b2-3/t2-/m2-/s1"), "b2-3")
+
+    def test_getTetrahedralStereoSublayer(self):
+        self.assertEqual(InChiParser.getTetrahedralStereoSublayer("InChI=1S/C4H10O/t3-/h3H"), "t3-")
+        self.assertEqual(InChiParser.getTetrahedralStereoSublayer("InChI=1S/C3H8/i2+2/b2-3/t2-/m2-/s1"), "t2-")
+
+    def test_getTypeStereoInfoSublayer(self):
+        self.assertEqual(InChiParser.getTypeStereoInfoSublayer("InChI=1S/C3H8/i2+2/b2-3/t2-/m2-/s1"), "s1")
+        self.assertIsNone(InChiParser.getTypeStereoInfoSublayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+
+    def test_getIsotopicLayer(self):
+        self.assertEqual(InChiParser.getIsotopicLayer("InChI=1S/C2H6O/i1+1/h1H2"), "i1+1")
+        self.assertEqual(InChiParser.getIsotopicLayer("InChI=1S/C3H8/i2+2/b2-3/t2-/m2-/s1"), "i2+2")
+        self.assertIsNone(InChiParser.getIsotopicLayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+
+    def test_getIsotopicHydrogenSublayer(self):
+        self.assertEqual(InChiParser.getIsotopicHydrogenSublayer("InChI=1S/CH4/i/h1H"), "h1H")
+        self.assertEqual(InChiParser.getIsotopicHydrogenSublayer("InChI=1S/C2H6O/i1+1/h1H2"), "h1H2")
+
+    def test_getIsotopicStereoSublayer(self):
+        self.assertEqual(InChiParser.getIsotopicStereoSublayer("InChI=1S/C3H8/i2+2/b2-3/t2-/m2-/s1"), "b2-3/t2-/m2-/s1")
+        self.assertEqual(InChiParser.getIsotopicStereoSublayer("InChI=1S/C3H6/i1/t1-"), "t1-")
+        self.assertIsNone(InChiParser.getIsotopicStereoSublayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+    
+    def test_getFixedHLayer(self):
+        self.assertEqual(InChiParser.getFixedHLayer("InChI=1/C3H6O/c1-3(2)4/h1-2H3/f/h1H"), "f")
+        self.assertIsNone(InChiParser.getFixedHLayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+
+    def test_getReconnectedLayer(self):
+        self.assertTrue(InChiParser.getReconnectedLayer("InChI=1S/C2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1/rC2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1").startswith("r"))
+        self.assertIsNone(InChiParser.getReconnectedLayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+
+
+if __name__ == "__main__":
+    unittest.main()
