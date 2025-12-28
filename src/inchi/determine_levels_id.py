@@ -118,7 +118,7 @@ class InChi:
                 InChi.isCompleteIdentity(inchi1, inchi2)
             )
             results[InchiLayers.INDEPENDENT_SALTS] = (
-                InChi.areEqualDisolvedSalts(inchi1, inchi2)
+                InChi.areEqualDisolvedSalts(inchi1, inchi2) #check when removing salts: stereo
             )
             results[InchiLayers.INDEPENDENT_CHARGES] = (
                 InChi.areEqualNoCharges(inchi1, inchi2)
