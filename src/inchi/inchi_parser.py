@@ -1,3 +1,5 @@
+from rdkit import Chem
+
 class InChiParser:
     def getMainLayer(inchi: str): #obtains chemical formula
         parts = inchi.split("/")
@@ -22,7 +24,6 @@ class InChiParser:
                 return sublayer
         return None
 
-
     def getChargeSublayer(inchi: str):
         parts = inchi.split("/")
         for p in parts:
@@ -36,6 +37,47 @@ class InChiParser:
             if p.startswith("p"):
                 return p
         return None
+    
+    from rdkit import Chem
+
+    def neutralize_molecule(mol):
+        #neutralize common charged functional groups and returns a new molecule
+        # (reactant_smarts, product_smiles)
+        neutralization_reactions = [
+            ('[n+;H]', 'n'),           # protonated pyridine
+            ('[N+;!H0]', 'N'),         # ammonium
+            ('[$([O-]);!$([O-][#7])]', 'O'),  # carboxylate, phosphate oxygens
+            ('[S-]', 'S'),
+            ('[N-]', 'N'),
+        ]
+
+        mol = Chem.RWMol(mol)
+
+        for smarts, replacement in neutralization_reactions:
+            patt = Chem.MolFromSmarts(smarts)
+            while mol.HasSubstructMatch(patt):
+                matches = mol.GetSubstructMatches(patt)
+                for match in matches:
+                    atom = mol.GetAtomWithIdx(match[0])
+                    atom.SetFormalCharge(0)
+                    atom.SetNumExplicitHs(atom.GetTotalNumHs() + 1)
+
+        return mol.GetMol()
+
+    def neutralize_inchi_and_compare(inchi: str):
+        mol = Chem.MolFromInchi(inchi, sanitize=True)
+        if mol is None:
+            return None  # invalid InChI
+
+        neutral_mol = InChiParser.neutralize_molecule(mol)
+
+        neutral_inchi = Chem.MolToInchi(neutral_mol)
+
+        return {
+            "original": inchi,
+            "neutral": neutral_inchi,
+            "same": inchi == neutral_inchi
+        }
 
     #stereochemical layer: double bonds and cumulenes (sublayer)
     def getDoubleBondsSublayer(inchi: str):
@@ -123,13 +165,21 @@ class InChiParser:
         return None
 
     def removeChargeLayersUsingParser(inchi: str) -> str:
+        if inchi is None:
+            return None
+
         parts = inchi.split("/")
         filtered_parts = []
+
         for p in parts:
-            if p.startswith("q") or p.startswith("p"):
-                # omitir capas de carga/protones para comparar inchis 
+            # remove p+N
+            if p.startswith("p+"):
                 continue
+
+            # keep everything else for now: q+N 
+            # and for p-N or q-N TODO
             filtered_parts.append(p)
+
         return "/".join(filtered_parts)
     
     def removeDoubleBondsSublayer(inchi: str) -> str:
@@ -171,8 +221,6 @@ class InChiParser:
             filtered_parts.append(p)
 
         return "/".join(filtered_parts)
-
-
 
     def removeIsotopicLayersUsingParser(inchi: str) -> str:
         if inchi is None:

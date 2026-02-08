@@ -29,6 +29,15 @@ class InChi:
             InChiParser.getProtonSublayer(inchi1) == InChiParser.getProtonSublayer(inchi2)
         )
     
+    def compare_charge_effects(original_inchi, neutral_inchi):
+        return {
+            "orig_no_charge": InChiParser.removeChargeLayersUsingParser(original_inchi),
+            "neutral_no_charge": InChiParser.removeChargeLayersUsingParser(neutral_inchi),
+            "charge_independent_equal":
+                InChiParser.removeChargeLayersUsingParser(original_inchi)
+                == InChiParser.removeChargeLayersUsingParser(neutral_inchi)
+        }
+    
     #stereochemical layer (sublayers: double bonds, tetrahedrals, type)
     def stereochemical_layer(inchi1: str, inchi2: str) -> bool:
         return (
@@ -112,7 +121,7 @@ class InChi:
 
     @staticmethod
     def get_ids(inchi1: str, inchi2: str) -> dict:
-        #dict<InchiLayers, bool>: For every identity rule, returns whether true/false for each layer
+        #dict<InchiLayers, bool>: for every identity rule, returns whether true/false for each layer
             results = {}
             results[InchiLayers.COMPLETE_IDENTITY] = (
                 InChi.isCompleteIdentity(inchi1, inchi2)

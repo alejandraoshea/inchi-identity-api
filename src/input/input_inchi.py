@@ -1,7 +1,5 @@
 class InputInChI:
-    def input_inchi(get_ids_function):
-        #Asks the user for two InChI strings and returns the result of get_ids(inchi1, inchi2).
-        
+    def input_inchi(get_ids_function): 
         print("\nEnter first InChI:")
         inchi1 = input().strip()
 

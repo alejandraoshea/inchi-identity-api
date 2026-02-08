@@ -1,5 +1,6 @@
 import unittest
 from inchi.inchi_parser import InChiParser
+from rdkit import Chem
 
 class TestInChI(unittest.TestCase):
     def test_getMainLayer(self):
@@ -58,6 +59,24 @@ class TestInChI(unittest.TestCase):
     def test_getReconnectedLayer(self):
         self.assertTrue(InChiParser.getReconnectedLayer("InChI=1S/C2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1/rC2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1").startswith("r"))
         self.assertIsNone(InChiParser.getReconnectedLayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
+
+    def test_carboxylate_neutralization():
+        inchi = "InChI=1S/CH2O2/c2-1-3/h1H,(H,2,3)/q-1"
+
+        mol = Chem.MolFromInchi(inchi)
+        assert mol is not None
+
+        neutral = InChiParser.neutralize_molecule(mol)
+        neutral_inchi = Chem.MolToInchi(neutral)
+
+        # no q- layer anymore
+        assert "/q-" not in neutral_inchi
+
+        # charge-independent comparison should match
+        assert (
+            InChiParser.removeChargeLayersUsingParser(inchi)
+            == InChiParser.removeChargeLayersUsingParser(neutral_inchi)
+        )
 
 
 if __name__ == "__main__":
