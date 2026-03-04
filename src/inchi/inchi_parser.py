@@ -138,8 +138,6 @@ class InChiParser:
         filtered = [p for p in parts if not (p.startswith("b") or p.startswith("h"))]
         return "/".join(filtered)
     
-        #to here
-    
     def getTautomerLayer(inchi: str):
         if inchi is None:
             return None

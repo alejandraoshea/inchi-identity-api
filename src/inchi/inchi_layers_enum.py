@@ -2,6 +2,7 @@ from enum import Enum
 
 class InchiLayers(Enum):
     COMPLETE_IDENTITY = "complete_identity"
+    ISOTOPIC = "isotopic"
     INDEPENDENT_SALTS = "independent_salts"
     INDEPENDENT_CHARGES = "independent_charges"
     TAUTOMERIC = "tautomeric"
@@ -10,4 +11,3 @@ class InchiLayers(Enum):
     STEREOCHEMICAL = "stereochemical" 
     STEREOCHEMICAL_CIS_TRANS = "stereochemical_cis_trans" 
     INDEPENDENT_DOUBLE_BONDS = "independent_double_bonds"
-    ISOTOPIC = "isotopic" #presence heavy metals

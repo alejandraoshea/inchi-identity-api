@@ -53,7 +53,6 @@ class InChi:
             InChiParser.getIsotopicHydrogenSublayer(inchi1) == InChiParser.getIsotopicHydrogenSublayer(inchi2) and
             InChiParser.getIsotopicStereoSublayer(inchi1) == InChiParser.getIsotopicStereoSublayer(inchi2)
         )
-    #Isotopic layer (prefix: "i"), may include sublayers:[13]
 
     def fixed_H_layer(inchi1: str, inchi2: str) -> bool:
         return InChiParser.getFixedHLayer(inchi1) == InChiParser.getFixedHLayer(inchi2)
@@ -61,7 +60,6 @@ class InChi:
     def reconnected_layer(inchi1: str, inchi2: str) -> bool:
         return InChiParser.getReconnectedLayer(inchi1) == InChiParser.getReconnectedLayer(inchi2)
     # never included in standard InChI
-
 
     def mol_from_inchi(inchi: str):
         try:
@@ -82,6 +80,12 @@ class InChi:
         except Exception:
             return mol
     
+    def areEqualNoIsotopes(inchi1: str, inchi2: str) -> bool:
+        inchi1_isotopes = InChiParser.removeIsotopicLayers(inchi1)
+        inchi2_isotopes = InChiParser.removeIsotopicLayers(inchi2)
+        return inchi1_isotopes == inchi2_isotopes
+    
+    #TODO: ADD HIERARCHY
     def areEqualDisolvedSalts(inchi1: str, inchi2: str) -> bool:
         mol1 = InChi.mol_from_inchi(inchi1)
         mol2 = InChi.mol_from_inchi(inchi2)
@@ -90,13 +94,15 @@ class InChi:
         main1 = InChi.main_fragment(mol1)
         main2 = InChi.main_fragment(mol2)      
         return Chem.MolToInchi(main1) == Chem.MolToInchi(main2)
-
-    """def areEqualNoCharges(inchi1: str, inchi2:str) -> bool:
-        inchi1_no_charge = InChiParser.removeChargeLayers(inchi1)
-        inchi2_no_charge = InChiParser.removeChargeLayers(inchi2)
-        return inchi1_no_charge == inchi2_no_charge
-        """
     
+    #helper method: detect negative charge to neutralize the mol
+    def has_negative_charge(inchi: str) -> bool:
+        for part in inchi.split("/"):
+            if part.startswith("q-") or part.startswith("p-"):
+                return True
+        return False
+
+    """
     @staticmethod
     def compare_after_neutralization(inchi1: str, inchi2: str) -> bool:
         mol1 = InChi.mol_from_inchi(inchi1)
@@ -113,12 +119,13 @@ class InChi:
         sig2 = Chem.MolToSmiles(neutral2,canonical=True,isomericSmiles=False,)
         
         return sig1 == sig2
-
+        """
+    
     def areEqualNoCharges(inchi1: str, inchi2: str) -> bool:
         if inchi1 is None or inchi2 is None:
             return False
 
-        # remove salts
+        # ---- STEP 1: Remove salts ----
         mol1 = InChi.mol_from_inchi(inchi1)
         mol2 = InChi.mol_from_inchi(inchi2)
 
@@ -128,15 +135,65 @@ class InChi:
             inchi1 = Chem.MolToInchi(mol1)
             inchi2 = Chem.MolToInchi(mol2)
 
-        # remove isotopes
+        # ---- STEP 2: Remove isotopes ----
         inchi1 = InChiParser.removeIsotopicLayers(inchi1)
         inchi2 = InChiParser.removeIsotopicLayers(inchi2)
 
-        # remove charge layer
-        inchi1 = InChiParser.removeChargeLayers(inchi1)
-        inchi2 = InChiParser.removeChargeLayers(inchi2)
+        p1_plus, p1_minus, q1_plus, q1_minus = InChi.get_charge_info(inchi1)
+        p2_plus, p2_minus, q2_plus, q2_minus = InChi.get_charge_info(inchi2)
+
+        # ---- CASE 1: Any negative charge → RDKit neutralization ----
+        if p1_minus or q1_minus or p2_minus or q2_minus:
+
+            mol1 = InChi.mol_from_inchi(inchi1)
+            mol2 = InChi.mol_from_inchi(inchi2)
+
+            if mol1 is None or mol2 is None:
+                return False
+
+            neutral1 = InChiParser.neutralize_molecule(mol1)
+            neutral2 = InChiParser.neutralize_molecule(mol2)
+
+            sig1 = Chem.MolToSmiles(neutral1, canonical=True, isomericSmiles=False)
+            sig2 = Chem.MolToSmiles(neutral2, canonical=True, isomericSmiles=False)
+
+            return sig1 == sig2
+
+        # ---- CASE 2: Only p+N → remove p layer only ----
+        if p1_plus or p2_plus:
+            inchi1 = InChi.remove_only_p_layer(inchi1)
+            inchi2 = InChi.remove_only_p_layer(inchi2)
+
+        # ---- IMPORTANT: q+N is untouched ----
 
         return inchi1 == inchi2
+
+    def get_charge_info(inchi: str):
+        has_p_plus = False
+        has_p_minus = False
+        has_q_plus = False
+        has_q_minus = False
+
+        for part in inchi.split("/"):
+            if part.startswith("p+"):
+                has_p_plus = True
+            elif part.startswith("p-"):
+                has_p_minus = True
+            elif part.startswith("q+"):
+                has_q_plus = True
+            elif part.startswith("q-"):
+                has_q_minus = True
+
+        return has_p_plus, has_p_minus, has_q_plus, has_q_minus
+    
+    def remove_only_p_layer(inchi: str) -> str:
+        parts = []
+        for p in inchi.strip().split("/"):
+            if p.startswith("p"):
+                continue
+            if p:  # avoid empty segments
+                parts.append(p.strip())
+        return "/".join(parts)
 
     def areEqualNoStereo(inchi1: str, inchi2: str) -> bool:
         inchi1_no_stereo = InChiParser.removeStereoLayers(inchi1)
@@ -148,11 +205,6 @@ class InChi:
         inchi1_no_double_bonds = InChiParser.removeDoubleBondsSublayer(inchi1)
         inchi2_no_double_bonds = InChiParser.removeDoubleBondsSublayer(inchi2)
         return inchi1_no_double_bonds == inchi2_no_double_bonds
-
-    def areEqualNoIsotopes(inchi1: str, inchi2: str) -> bool:
-        inchi1_isotopes = InChiParser.removeIsotopicLayers(inchi1)
-        inchi2_isotopes = InChiParser.removeIsotopicLayers(inchi2)
-        return inchi1_isotopes == inchi2_isotopes
     
     def areEqualTautomers(inchi1: str, inchi2: str) -> bool:
         sig1 = InChiParser.getTautomerLayer(inchi1)
