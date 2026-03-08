@@ -204,5 +204,4 @@ class InChi:
             results[InchiLayers.ISOTOPIC] = (
                 InChi.areEqualNoIsotopes(inchi1, inchi2)
             )
-
             return results
