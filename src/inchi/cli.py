@@ -4,8 +4,8 @@ from inchi.compare import compare_files
 def main():
 
     parser = argparse.ArgumentParser(
-        prog="metaboid",
-        description="Metaboid molecular identity comparison tool"
+        prog="inchi",
+        description="InChi identity comparison tool"
     )
 
     subparsers = parser.add_subparsers(dest="command")
