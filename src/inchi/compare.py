@@ -16,7 +16,6 @@ def compare_files(file1, file2, config_path=None, output_file=None):
 
     for i1 in inchi_list1:
         for i2 in inchi_list2:
-
             comparison = InChi.get_ids(i1, i2, config)
 
             results.append({

@@ -2,7 +2,6 @@ import argparse
 from inchi.compare import compare_files
 
 def main():
-
     parser = argparse.ArgumentParser(
         prog="inchi",
         description="Inchi identity comparison tool"
@@ -34,14 +33,12 @@ def main():
     args = parser.parse_args()
 
     if args.command == "compare":
-
         compare_files(
             args.file1,
             args.file2,
             args.config,
             args.output_file
         )
-
 
 if __name__ == "__main__":
     main()

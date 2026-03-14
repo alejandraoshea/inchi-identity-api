@@ -24,7 +24,7 @@
 
     "tautomer_independence": {
       "tautomer_independent_identity": false,
-      "inchitrust_path": "/usr/local/bin/inchitrust"
+      "inchitrust_path": null
     },
 
     "substituent_position_independence": {
