@@ -1,7 +1,6 @@
 class InputInChI:
 
     def input_inchi(get_ids_function, config):
-
         print("\nEnter first InChI:")
         inchi1 = input().strip()
 

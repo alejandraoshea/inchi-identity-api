@@ -4,7 +4,7 @@ from rdkit.Chem.SaltRemover import SaltRemover
 from inchi.inchi_parser import InChiParser
 from inchi.inchi_layers_enum import InchiLayers
 from inchi.lipid_analysis import LipidAnalysis
-import subprocess
+import subprocess, os
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from collections import Counter
 
@@ -233,7 +233,16 @@ class InChi:
             print(f"InChI Trust execution failed: {e}")
             return None
         
-    def areEqualTautomers(inchi1: str, inchi2: str, inchitrust_path: str) -> bool:
+    def areEqualTautomers(inchi1: str, inchi2: str, inchitrust_path: str | None = None) -> bool:
+        # If path not provided, read from environment variable
+        if inchitrust_path is None:
+            inchitrust_path = os.getenv("INCHITRUST_PATH")
+
+        if not inchitrust_path:
+            raise ValueError(
+                "InChI Trust path not provided. Set INCHITRUST_PATH environment variable."
+            )
+
         # STEP 1: remove isotope layers
         inchi1 = InChiParser.removeIsotopicLayers(inchi1)
         inchi2 = InChiParser.removeIsotopicLayers(inchi2)
@@ -264,6 +273,7 @@ class InChi:
     def get_scaffold(mol):
         return MurckoScaffold.GetScaffoldForMol(mol)
 
+    #TODO: CORRECT METHOD
     def get_substituent_signatures(mol, scaffold):
         scaffold_atoms = {a.GetIdx() for a in scaffold.GetAtoms()}
         visited = set()
