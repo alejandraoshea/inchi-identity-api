@@ -3,32 +3,25 @@ from rdkit import Chem
 
 class LipidAnalysis:
 
-    # generic polar head anchors 
+    # SMARTS patterns used to detect polar lipid headgroups
     HEAD_ANCHORS = {
-        "phosphate": Chem.MolFromSmarts("P(=O)(O)(O)"),
-        "amine": Chem.MolFromSmarts("[NX3;H2,H1,H0;+0,+1]"),
-        "carboxyl": Chem.MolFromSmarts("C(=O)[O;H,-]"),
-        "amide": Chem.MolFromSmarts("C(=O)N"),
-        "sugar": Chem.MolFromSmarts("O[C@H]1[C@H](O)[C@H](O)[C@H](O)[C@H]1O"),
+        "phosphate": Chem.MolFromSmarts("P(=O)(O)(O)"), #detects phospolipids
+        "amine": Chem.MolFromSmarts("[NX3;H2,H1,H0;+0,+1]"), #detects nitrogen group like ethanolamine, choline, serine
+        "carboxyl": Chem.MolFromSmarts("C(=O)[O;H,-]"), #detects FA headgroups
+        "amide": Chem.MolFromSmarts("C(=O)N"), #detects sphingolipid linkages
+        "sugar": Chem.MolFromSmarts("O[C@H]1[C@H](O)[C@H](O)[C@H](O)[C@H]1O"), #detects glycolipid heads
     }
 
+    #min chain length to consider it a FA
     MIN_TAIL_CARBONS = 6
 
-    # STEP 1 remove cis/trans stereochemistry
-    @staticmethod
-    def remove_cis_trans(mol):
-        for bond in mol.GetBonds():
-            if (
-                bond.GetBondType() == Chem.BondType.DOUBLE
-                and bond.GetBeginAtom().GetAtomicNum() == 6
-                and bond.GetEndAtom().GetAtomicNum() == 6):
-                    bond.SetStereo(Chem.BondStereo.STEREONONE)
-                
-        Chem.AssignStereochemistry(mol, cleanIt=True, force=True)
-
-    # STEP 2 detect head atoms via SMARTS anchors
+    # STEP 1 detect head atoms via SMARTS anchors
     @staticmethod
     def detect_head_atoms(mol):
+        """
+        Find atoms belonging to the lipid headgroup
+        For each SMARTS pattern: find matches and store atoms
+        """
         head_atoms = set()
         for smarts in LipidAnalysis.HEAD_ANCHORS.values():
             matches = mol.GetSubstructMatches(smarts)
@@ -38,68 +31,88 @@ class LipidAnalysis:
 
         return head_atoms
 
-    # STEP 3 extract tails via graph traversal
+    # STEP 2 extract tails via graph traversal
     @staticmethod
     def extract_tails(mol, head_atoms):
+        """
+        Extract lipid hydrocarbon tails.
+
+        1. Start from carbon atoms directly connected to the polar head.
+        2. Traverse only through carbon atoms.
+        3. Stop if we return to head atoms.
+        """
+        
         visited = set(head_atoms)
         tails = []
 
-        for atom_idx in head_atoms:
-            atom = mol.GetAtomWithIdx(atom_idx)
+        for head_idx in head_atoms:
+            head_atom = mol.GetAtomWithIdx(head_idx)
 
-            for nbr in atom.GetNeighbors():
-                nbr_idx = nbr.GetIdx()
-
-                if nbr_idx in visited:
+            for nbr in head_atom.GetNeighbors():
+                # tails must start with carbon
+                if nbr.GetAtomicNum() != 6:
                     continue
 
-                stack = [nbr_idx]
+                start_tail = nbr.GetIdx()
+                if start_tail in visited:
+                    continue
+
+                stack = [start_tail]
                 tail_atoms = set()
 
                 while stack:
-                    current = stack.pop()
-                    if current in visited:
+                    current_idx = stack.pop()
+                    if current_idx in visited or current_idx in head_atoms:
                         continue
 
-                    visited.add(current)
-                    tail_atoms.add(current)
-                    current_atom = mol.GetAtomWithIdx(current)
+                    atom = mol.GetAtomWithIdx(current_idx)
+                    # stop if not carbon (prevents entering headgroup)
+                    if atom.GetAtomicNum() != 6:
+                        continue
+                    
+                    visited.add(current_idx)
+                    tail_atoms.add(current_idx)
 
-                    for next_atom in current_atom.GetNeighbors():
-                        next_idx = next_atom.GetIdx()
+                    for next_atom in atom.GetNeighbors():
+                        stack.append(next_atom.GetIdx())
 
-                        if next_idx not in visited:
-                            stack.append(next_idx)
-
-                if tail_atoms:
+                if len(tail_atoms) >= LipidAnalysis.MIN_TAIL_CARBONS:
                     tails.append(tail_atoms)
 
         return tails
 
-    # STEP 4 compute tail signature
+    # STEP 3 compute tail signature
     @staticmethod
     def tail_signature(mol, tail_atoms):
+        """
+        Converts a tail into a simple numeric signature:
+        CH3-(CH2)16-CH=CH-COOH into (18 carbons, 1 double bond)
+        """
         carbons = 0
         double_bonds = 0
 
         for idx in tail_atoms:
             atom = mol.GetAtomWithIdx(idx)
 
+            #we count C atoms
             if atom.GetAtomicNum() == 6:
                 carbons += 1
 
             for bond in atom.GetBonds():
+                #we count double bonds
                 if bond.GetBondType() == Chem.BondType.DOUBLE:
                     double_bonds += 1
 
+        #each bond appears twice in transversal
         double_bonds = double_bonds // 2
 
+        #discard fragments that are too short
         if carbons < LipidAnalysis.MIN_TAIL_CARBONS:
             return None
 
         return (carbons, double_bonds)
 
-    # STEP 5: build lipid signature
+    # STEP 4: build lipid signature
     @staticmethod
     def lipid_signature(mol):
         head_atoms = LipidAnalysis.detect_head_atoms(mol)
@@ -116,6 +129,18 @@ class LipidAnalysis:
                 tail_sigs.append(sig)
 
         return tuple(sorted(tail_sigs))
+
+    # STEP 5 remove cis/trans stereochemistry
+    @staticmethod
+    def remove_cis_trans(mol):
+        for bond in mol.GetBonds():
+            if (
+                bond.GetBondType() == Chem.BondType.DOUBLE
+                and bond.GetBeginAtom().GetAtomicNum() == 6
+                and bond.GetEndAtom().GetAtomicNum() == 6):
+                    bond.SetStereo(Chem.BondStereo.STEREONONE) #rdkit recomputes stereochemistry 
+                
+        Chem.AssignStereochemistry(mol, cleanIt=True, force=True)
 
     # STEP 6 compare molecules
     @staticmethod

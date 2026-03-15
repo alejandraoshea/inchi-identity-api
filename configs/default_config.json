@@ -24,12 +24,8 @@
 
     "tautomer_independence": {
       "tautomer_independent_identity": false,
+      "substituent_position_independent_identity": true,
       "inchitrust_path": null
-    },
-
-    "substituent_position_independence": {
-      "substituent_position_independent_identity": true
     }
-
   }
 }

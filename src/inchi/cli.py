@@ -4,7 +4,7 @@ from inchi.compare import compare_files
 def main():
     parser = argparse.ArgumentParser(
         prog="inchi",
-        description="Inchi identity comparison tool"
+        description="Metaboid identity comparison tool"
     )
 
     subparsers = parser.add_subparsers(dest="command")
@@ -12,8 +12,9 @@ def main():
     # compare command
     compare_parser = subparsers.add_parser(
         "compare",
-        help="Compare two files containing InChIs"
-    )
+        help="Compare two txt files containing InChIs"
+    ) #for now its txt 
+    #TODO: also read mgf files
 
     compare_parser.add_argument("file1")
     compare_parser.add_argument("file2")

@@ -274,6 +274,10 @@ class InChi:
         return taut1 == taut2
 
 
+    @staticmethod
+    def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
+        return None
+
     """
     @staticmethod
     def get_ids(inchi1: str, inchi2: str) -> dict:
@@ -316,31 +320,33 @@ class InChi:
 
         # ISOTOPES
         if criteria["isotope_independence"]["isotope_independent_identity"]:
-            results[InchiLayers.ISOTOPIC] = (
+            results[InchiLayers.ISOTOPIC_INDEPENDENCE] = (
                 InChi.areEqualNoIsotopes(inchi1, inchi2)
             )
 
         # SALTS
         if criteria["salt_independence"]["desalted_identity"]:
-            results[InchiLayers.INDEPENDENT_SALTS] = (
+            results[InchiLayers.SALTS_INDEPENDENCE] = (
                 InChi.areEqualDisolvedSalts(inchi1, inchi2)
             )
 
         # CHARGES
         if criteria["charge_independence"]["charge_independent_identity"]:
-            results[InchiLayers.INDEPENDENT_CHARGES] = (
+            results[InchiLayers.CHARGES_INDEPENDENCE] = (
                 InChi.areEqualNoCharges(inchi1, inchi2)
             )
 
+        #ISOMER
         # DOUBLE BOND POSITION
         if criteria["isomer_independence"]["double_bond_position_independent_identity"]:
-            results[InchiLayers.INDEPENDENT_DOUBLE_BONDS] = (
+            results[InchiLayers.DOUBLE_BONDS_INDEPENDENCE] = (
                 InChi.areEqualNoPositionDoubleBond(inchi1, inchi2)
             )
 
         # CIS/TRANS
+        #TODO: if true then we apply it, if not, we dont
         if criteria["isomer_independence"]["cis_trans_independent_identity"]:
-            results[InchiLayers.STEREOCHEMICAL_CIS_TRANS] = (
+            results[InchiLayers.STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE] = (
                 InChi.areEqualNoStereo(inchi1, inchi2)
             )
 
@@ -349,13 +355,13 @@ class InChi:
 
         if tautomer_cfg["tautomer_independent_identity"]:
             inchitrust_path = tautomer_cfg["inchitrust_path"]
-            results[InchiLayers.TAUTOMERIC] = (
+            results[InchiLayers.TAUTOMER_INDEPENDENCE] = (
                 InChi.areEqualTautomers(inchi1, inchi2, inchitrust_path)
             )
         
         # SUBSTITUENT POSITION INDEPENDENCE
-        if criteria["substituent_position_independence"]["substituent_position_independent_identity"]:
-            results[InchiLayers.SUBSTITUENT_POSITION_INDEPENDENT] = (
+        if tautomer_cfg["substituent_position_independent_identity"]:
+            results[InchiLayers.SUBSTITUENT_POSITION_INDEPENDENCE] = (
                 InChi.areEqualSubstituentIndependent(inchi1, inchi2)
             )
 

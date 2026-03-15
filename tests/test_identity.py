@@ -51,17 +51,17 @@ class TestInChI(unittest.TestCase):
         inchi2="InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3 "
         self.assertTrue(InChi.areEqualNoCharges(inchi1, inchi2))
 
-    def test_equal_no_position_double_bond_position(self):
+    def test_equal_no_position_double_bond(self):
         inchi1="InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-"
         inchi2="InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+"
         self.assertTrue(InChi.areEqualNoPositionDoubleBond(inchi1, inchi2))
 
-    def test_equal_no_position_double_bond_position2(self):
+    def test_equal_no_position_double_bond2(self):
         inchi1="InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+"
         inchi2="InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h7-8H,2-6,9-17H2,1H3,(H,19,20)/b8-7+"
         self.assertTrue(InChi.areEqualNoPositionDoubleBond(inchi1, inchi2))
 
-    def test_equal_no_position_double_bond(self):
+    def test_equal_no_position_double_bond3(self):
         #acido cis-oleico
         inchi1="InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-"
         #acido trans-oleico
@@ -81,10 +81,10 @@ class TestInChI(unittest.TestCase):
         self.assertTrue(InChi.areEqualTautomers(inchi1, inchi2))
 
     #only test not passing:
-    """def test_are_equal_substituents(self):
+    def test_are_equal_substituents(self):
         inchi1="InChI=1S/C26H46NO8P/c1-6-8-10-12-13-14-15-17-19-26(29)35-24(22-32-25(28)18-16-11-9-7-2)23-34-36(30,31)33-21-20-27(3,4)5/h6-9,11,16,24H,10,12-15,17-23H2,1-5H3/b8-6-,9-7+,16-11+/t24-/m1/s1"
         inchi2="InChI=1S/C26H46NO8P/c1-5-6-7-8-9-10-11-16-19-26(30)33-22-24(17-14-12-13-15-18-25(28)29)23-35-36(31,32)34-21-20-27(2,3)4/h5-6,12-15,24H,7-11,16-23H2,1-4H3,(H-,28,29,31,32)/b6-5-,14-12+,15-13+/t24-/m1/s1"
-        self.assertTrue(InChi.areEqualSubstituentIndependent(inchi1, inchi2))"""
+        self.assertTrue(InChi.areEqualSubstituentIndependent(inchi1, inchi2))
 
 
 if __name__ == "__main__":

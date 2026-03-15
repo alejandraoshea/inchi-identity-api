@@ -5,12 +5,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -18,12 +18,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -31,12 +31,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h7-8H,2-6,9-17H2,1H3,(H,19,20)/b8-7+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -44,12 +44,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -57,12 +57,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -70,12 +70,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -83,12 +83,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -96,12 +96,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h7-8H,2-6,9-17H2,1H3,(H,19,20)/b8-7+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -109,12 +109,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -122,12 +122,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -135,12 +135,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -148,12 +148,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -161,12 +161,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h7-8H,2-6,9-17H2,1H3,(H,19,20)/b8-7+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -174,12 +174,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -187,12 +187,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -200,12 +200,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -213,12 +213,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -226,12 +226,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h7-8H,2-6,9-17H2,1H3,(H,19,20)/b8-7+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -239,12 +239,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -252,12 +252,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -265,12 +265,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h9-10H,2-8,11-17H2,1H3,(H,19,20)/b10-9-",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -278,12 +278,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -291,12 +291,12 @@
             "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h7-8H,2-6,9-17H2,1H3,(H,19,20)/b8-7+",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -304,12 +304,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         },
         {
@@ -317,12 +317,12 @@
             "inchi_2": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3",
             "results": {
                 "COMPLETE_IDENTITY": false,
-                "ISOTOPIC": false,
-                "INDEPENDENT_SALTS": false,
-                "INDEPENDENT_CHARGES": false,
-                "INDEPENDENT_DOUBLE_BONDS": false,
-                "STEREOCHEMICAL_CIS_TRANS": false,
-                "SUBSTITUENT_POSITION_INDEPENDENT": false
+                "ISOTOPIC_INDEPENDENCE": false,
+                "SALTS_INDEPENDENCE": false,
+                "CHARGES_INDEPENDENCE": false,
+                "DOUBLE_BONDS_INDEPENDENCE": false,
+                "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
+                "SUBSTITUENT_POSITION_INDEPENDENCE": null
             }
         }
     ]
