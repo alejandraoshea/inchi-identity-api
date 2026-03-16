@@ -273,11 +273,9 @@ class InChi:
 
         return taut1 == taut2
 
-
-    @staticmethod
+    #TODO
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
         return None
-
     """
     @staticmethod
     def get_ids(inchi1: str, inchi2: str) -> dict:
@@ -308,7 +306,7 @@ class InChi:
 
     @staticmethod
     def get_ids(inchi1: str, inchi2: str, config: dict) -> dict:
-        criteria = config["identity_criteria"]
+        criteria = config.get("identity_criteria", {})
 
         results = {}
 
@@ -351,18 +349,19 @@ class InChi:
             )
 
         # TAUTOMERS
-        tautomer_cfg = criteria["tautomer_independence"]
+        tautomer_cfg = criteria.get("tautomer_independence", {})
 
-        if tautomer_cfg["tautomer_independent_identity"]:
-            inchitrust_path = tautomer_cfg["inchitrust_path"]
+        if tautomer_cfg.get("tautomer_independent_identity", False):
+            inchitrust_path = tautomer_cfg.get("inchitrust_path")
             results[InchiLayers.TAUTOMER_INDEPENDENCE] = (
                 InChi.areEqualTautomers(inchi1, inchi2, inchitrust_path)
             )
-        
+
         # SUBSTITUENT POSITION INDEPENDENCE
-        if tautomer_cfg["substituent_position_independent_identity"]:
+        if tautomer_cfg.get("substituent_position_independent_identity", False):
             results[InchiLayers.SUBSTITUENT_POSITION_INDEPENDENCE] = (
                 InChi.areEqualSubstituentIndependent(inchi1, inchi2)
             )
+
 
         return results
