@@ -273,9 +273,223 @@ class InChi:
 
         return taut1 == taut2
 
-    #TODO
+    @staticmethod
+    def is_lipid(mol):
+
+        ester_count = 0
+        long_chain_count = 0
+
+        for bond in mol.GetBonds():
+
+            atom1 = bond.GetBeginAtom()
+            atom2 = bond.GetEndAtom()
+
+            # Detect ester bonds
+            if bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
+                if (atom1.GetSymbol() == "C" and atom2.GetSymbol() == "O") or \
+                (atom2.GetSymbol() == "C" and atom1.GetSymbol() == "O"):
+                    ester_count += 1
+
+        # Detect long carbon chains
+        for atom in mol.GetAtoms():
+            if atom.GetSymbol() != "C":
+                continue
+
+            chain_len = 0
+            visited = set()
+            stack = [atom.GetIdx()]
+
+            while stack:
+                idx = stack.pop()
+                if idx in visited:
+                    continue
+                visited.add(idx)
+                a = mol.GetAtomWithIdx(idx)
+                if a.GetSymbol() == "C":
+                    chain_len += 1
+                    for nbr in a.GetNeighbors():
+                        if nbr.GetSymbol() == "C":
+                            stack.append(nbr.GetIdx())
+
+            if chain_len >= 8:  # minimum length for fatty acyl
+                long_chain_count += 1
+
+        # lipid if at least 1 ester and at least 1 long chain
+        return ester_count >= 1 and long_chain_count >= 1
+    
+    @staticmethod
+    def get_substituent_signatures(mol):
+        mol = InChi.main_fragment(mol)
+        scaffold = MurckoScaffold.GetScaffoldForMol(mol)
+
+        # detect molecules with no Murcko scaffold (e.g. lipids)
+        use_scaffold = scaffold.GetNumAtoms() < mol.GetNumAtoms()
+
+        if use_scaffold:
+            scaffold_smiles = Chem.MolToSmiles(
+                scaffold,
+                canonical=True,
+                isomericSmiles=False
+            )
+            scaffold_atoms = {a.GetIdx() for a in scaffold.GetAtoms()}
+        else:
+            # no scaffold → treat whole molecule as substituent space
+            scaffold_smiles = "NO_SCAFFOLD"
+            scaffold_atoms = set()
+
+        visited = set()
+        substituents = []
+
+        for atom in mol.GetAtoms():
+            idx = atom.GetIdx()
+
+            if idx in scaffold_atoms or idx in visited:
+                continue
+
+            stack = [idx]
+            frag_atoms = set()
+
+            while stack:
+                current = stack.pop()
+                if current in visited:
+                    continue
+
+                visited.add(current)
+                frag_atoms.add(current)
+                atom_obj = mol.GetAtomWithIdx(current)
+
+                for nbr in atom_obj.GetNeighbors():
+                    nbr_idx = nbr.GetIdx()
+                    if nbr_idx not in scaffold_atoms and nbr_idx not in visited:
+                        stack.append(nbr_idx)
+
+            if frag_atoms:
+                smiles = Chem.MolFragmentToSmiles(
+                    mol,
+                    atomsToUse=list(frag_atoms),
+                    canonical=True,
+                    isomericSmiles=False
+                )
+
+                substituents.append(smiles)
+
+        return scaffold_smiles, Counter(substituents)
+    
+    @staticmethod
+    def substituent_position_independent_signature(inchi: str):
+        mol = InChi.mol_from_inchi(inchi)
+
+        if mol is None:
+            return None
+
+        scaffold, subs = InChi.get_substituent_signatures(mol)
+
+        return (scaffold, subs)
+    
+    @staticmethod
+    def lipid_chain_signatures(mol):
+            #extracts substituets
+            chains = []
+
+            for bond in mol.GetBonds():
+                #examine every bond
+                atom1 = bond.GetBeginAtom()
+                atom2 = bond.GetEndAtom()
+
+                # detect ester C=O and we identify the carbonyl atom
+                if bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
+                    if atom1.GetSymbol() == "C" and atom2.GetSymbol() == "O":
+                        carbon = atom1
+                    elif atom2.GetSymbol() == "C" and atom1.GetSymbol() == "O":
+                        carbon = atom2
+
+                    else:
+                        continue
+
+                    # follow carbon (FA) chain
+                    for nbr in carbon.GetNeighbors():
+                        if nbr.GetSymbol() == "C":
+                            #generate the canonical SMILES representation of substituents
+                            chain = Chem.MolFragmentToSmiles(
+                                mol,
+                                atomsToUse=[nbr.GetIdx()],
+                                canonical=True,
+                                isomericSmiles=False
+                            )
+
+                            chains.append(chain)
+
+                #ether detection
+                if bond.GetBondType() == Chem.rdchem.BondType.SINGLE:
+                    if atom1.GetSymbol() == "O" and atom2.GetSymbol() == "C":
+                        if atom1.GetDegree() > 1:
+                            for nbr in atom2.GetNeighbors():
+                                if nbr.GetSymbol() == "C" and nbr.GetIdx() != atom1.GetIdx():
+                                    chain = Chem.MolFragmentToSmiles(
+                                        mol,
+                                        atomsToUse=[nbr.GetIdx()],
+                                        canonical=True,
+                                        isomericSmiles=False
+                                    )
+                                    if chain.count("C") >= 8:
+                                        chains.append(chain)
+
+                    elif atom2.GetSymbol() == "O" and atom1.GetSymbol() == "C":
+                        if atom1.GetDegree() > 1:
+                            for nbr in atom1.GetNeighbors():
+                                if nbr.GetSymbol() == "C" and nbr.GetIdx() != atom2.GetIdx():
+                                    chain = Chem.MolFragmentToSmiles(
+                                        mol,
+                                        atomsToUse=[nbr.GetIdx()],
+                                        canonical=True,
+                                        isomericSmiles=False
+                                    )
+
+                                if chain.count("C") >= 8:
+                                    chains.append(chain)
+
+            return Counter(chains)
+    
+    @staticmethod
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
-        return None
+        # STEP 1: remove isotopes
+        inchi1 = InChiParser.removeIsotopicLayers(inchi1)
+        inchi2 = InChiParser.removeIsotopicLayers(inchi2)
+
+        mol1 = InChi.mol_from_inchi(inchi1)
+        mol2 = InChi.mol_from_inchi(inchi2)
+
+        if mol1 is None or mol2 is None:
+            return False
+
+        #STEP 2: remove salts
+        mol1 = InChi.main_fragment(mol1)
+        mol2 = InChi.main_fragment(mol2)
+
+        #Step 3: charges
+        mol1 = InChiParser.neutralize_molecule(mol1)
+        mol2 = InChiParser.neutralize_molecule(mol2)
+
+        #STEP 4: cis/trans 
+        LipidAnalysis.remove_cis_trans(mol1)
+        LipidAnalysis.remove_cis_trans(mol2)
+
+        sig1 = InChi.lipid_chain_signatures(mol1)
+        sig2 = InChi.lipid_chain_signatures(mol2)
+
+        #case 1: molecule is a lipid
+        if InChi.is_lipid(mol1) and InChi.is_lipid(mol2):
+            return sig1 == sig2
+        
+        #case 2 - Murcko scaffold substituent comparison
+        sig1 = InChi.substituent_position_independent_signature(inchi1)
+        sig2 = InChi.substituent_position_independent_signature(inchi2)
+
+        print("SIG1:", sig1)
+        print("SIG2:", sig2)
+
+        return sig1 == sig2
+
     """
     @staticmethod
     def get_ids(inchi1: str, inchi2: str) -> dict:
