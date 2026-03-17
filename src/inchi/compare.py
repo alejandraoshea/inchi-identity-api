@@ -3,6 +3,7 @@ from pathlib import Path
 from inchi.config_loader import load_config
 from .determine_levels_id import InChi
 
+#TODO: add 3 case scenarios (1-1, specific levels, M-N)
 def compare_files(file1, file2, config_path=None, output_file=None):
     config = load_config(config_path)
 

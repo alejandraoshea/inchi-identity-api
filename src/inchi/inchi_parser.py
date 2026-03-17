@@ -1,5 +1,4 @@
 from rdkit import Chem
-from rdkit.Chem.MolStandardize import rdMolStandardize
 
 class InChiParser:
     def getMainLayer(inchi: str): #obtains chemical formula
@@ -175,20 +174,3 @@ class InChiParser:
             parts.append(p)
 
         return "/".join(parts)
-
-
-    def neutralize_molecule(mol):
-        # Standardize and cleanup the molecule
-        clean_mol = rdMolStandardize.Cleanup(mol)
-        # Remove fragments and keep largest, then neutralize
-        parent_clean_mol = rdMolStandardize.FragmentParent(clean_mol)
-        uncharger = rdMolStandardize.Uncharger()
-        return uncharger.uncharge(parent_clean_mol)
-    
-    def neutralize_inchi(inchi: str):
-        mol = Chem.MolFromInchi(inchi)
-        if mol is None:
-            return None
-
-        neutral = InChiParser.neutralize_molecule(mol)
-        return Chem.MolToInchi(neutral)

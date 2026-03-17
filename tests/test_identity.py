@@ -80,7 +80,6 @@ class TestInChI(unittest.TestCase):
         inchi2="InChI=1S/C5H11N/c1-3-4-5(2)6/h4H,3,6H2,1-2H3/b5-4-"
         self.assertTrue(InChi.areEqualTautomers(inchi1, inchi2))
 
-    #only test not passing:
     def test_are_equal_substituents(self):
         inchi1="InChI=1S/C26H46NO8P/c1-6-8-10-12-13-14-15-17-19-26(29)35-24(22-32-25(28)18-16-11-9-7-2)23-34-36(30,31)33-21-20-27(3,4)5/h6-9,11,16,24H,10,12-15,17-23H2,1-5H3/b8-6-,9-7+,16-11+/t24-/m1/s1"
         inchi2="InChI=1S/C26H46NO8P/c1-5-6-7-8-9-10-11-16-19-26(30)33-22-24(17-14-12-13-15-18-25(28)29)23-35-36(31,32)34-21-20-27(2,3)4/h5-6,12-15,24H,7-11,16-23H2,1-4H3,(H-,28,29,31,32)/b6-5-,14-12+,15-13+/t24-/m1/s1"

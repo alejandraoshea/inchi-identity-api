@@ -145,12 +145,9 @@ class LipidAnalysis:
     # STEP 6 compare molecules
     @staticmethod
     def equal_ignore_double_bond_position(mol1, mol2):
-        #FA : lipid comparison
-        #other: normal structure comparison
         sig1 = LipidAnalysis.lipid_signature(mol1)
         sig2 = LipidAnalysis.lipid_signature(mol2)
 
-        # if not a fatty-acid lipid
         if sig1 is None or sig2 is None:
             return Chem.MolToSmiles(mol1, canonical=True) == Chem.MolToSmiles(mol2, canonical=True)
 
