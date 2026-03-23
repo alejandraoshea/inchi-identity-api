@@ -1,21 +1,139 @@
+import requests
+from functools import lru_cache
 from rdkit import Chem
 
-
 class LipidAnalysis:
+    CLASSYFIRE_URL = "https://classyfire.wishartlab.com/entities.json"
 
     # SMARTS patterns used to detect polar lipid headgroups
     HEAD_ANCHORS = {
         "phosphate": Chem.MolFromSmarts("P(=O)(O)(O)"), #detects phospolipids
+        "phosphocholine": Chem.MolFromSmarts("P(=O)(O)(O)OCC[N+](C)(C)C"),
         "amine": Chem.MolFromSmarts("[NX3;H2,H1,H0;+0,+1]"), #detects nitrogen group like ethanolamine, choline, serine
-        "carboxyl": Chem.MolFromSmarts("C(=O)[O;H,-]"), #detects FA headgroups
+        "quaternary_amine": Chem.MolFromSmarts("[NX4+]"),
         "amide": Chem.MolFromSmarts("C(=O)N"), #detects sphingolipid linkages
-        "sugar": Chem.MolFromSmarts("O[C@H]1[C@H](O)[C@H](O)[C@H](O)[C@H]1O"), #detects glycolipid heads
+        "sugar_ring": Chem.MolFromSmarts("C1OC(O)C(O)C(O)C1O"), #detects glycolipid heads
+        "glycerol": Chem.MolFromSmarts("OCC(O)CO"),
+        "carboxyl": Chem.MolFromSmarts("C(=O)[O;H,-]"), #detects FA headgroups
     }
 
     #min chain length to consider it a FA
     MIN_TAIL_CARBONS = 6
 
-    # STEP 1 detect head atoms via SMARTS anchors
+    @staticmethod
+    def is_lipid_rdkit(mol):
+        ester_count = 0
+        long_chain_count = 0
+
+        for bond in mol.GetBonds():
+
+            atom1 = bond.GetBeginAtom()
+            atom2 = bond.GetEndAtom()
+
+            # Detect ester bonds
+            if bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
+                if (atom1.GetSymbol() == "C" and atom2.GetSymbol() == "O") or \
+                (atom2.GetSymbol() == "C" and atom1.GetSymbol() == "O"):
+                    ester_count += 1
+
+        # Detect long carbon chains
+        for atom in mol.GetAtoms():
+            if atom.GetSymbol() != "C":
+                continue
+
+            chain_len = 0
+            visited = set()
+            stack = [atom.GetIdx()]
+
+            while stack:
+                idx = stack.pop()
+                if idx in visited:
+                    continue
+                visited.add(idx)
+                a = mol.GetAtomWithIdx(idx)
+                if a.GetSymbol() == "C":
+                    chain_len += 1
+                    for nbr in a.GetNeighbors():
+                        if nbr.GetSymbol() == "C":
+                            stack.append(nbr.GetIdx())
+
+            if chain_len >= 8:  # minimum length for fatty acyl
+                long_chain_count += 1
+
+        # lipid if at least 1 ester and at least 1 long chain
+        return ester_count >= 1 and long_chain_count >= 1
+    
+
+    @staticmethod
+    @lru_cache(maxsize=10000)
+    def is_lipid_classyfire(inchi: str) -> bool:
+        try:
+            response = requests.get(
+                LipidAnalysis.CLASSYFIRE_URL,
+                params={"inchi": inchi},
+                timeout=5
+            )
+
+            if response.status_code != 200:
+                return False
+
+            data = response.json()
+            if not data:
+                return False
+
+            entry = data[0]
+
+            # Check multiple taxonomy levels (more robust)
+            taxonomy_fields = [
+                entry.get("kingdom", {}).get("name", ""),
+                entry.get("superclass", {}).get("name", ""),
+                entry.get("class", {}).get("name", ""),
+                entry.get("subclass", {}).get("name", "")
+            ]
+
+            for field in taxonomy_fields:
+                if field and "lipid" in field.lower():
+                    return True
+
+            return False
+
+        except Exception:
+            return False
+
+    @staticmethod
+    def is_lipid(inchi: str, mol=None, use_classyfire=True) -> bool:
+        """
+        Hybrid lipid detection:
+        1. ClassyFire
+        2. If False → fallback to RDKit heuristic
+        """
+
+        if mol is None:
+            mol = Chem.MolFromInchi(inchi)
+            if mol is None:
+                return False
+
+        # STEP 1: Classyfire
+        if use_classyfire:
+            if LipidAnalysis.is_lipid_classyfire(inchi):
+                return True
+
+        # STEP 2: fallback RDKit
+        return LipidAnalysis.is_lipid_rdkit(mol)
+    
+    # STEP 1 remove cis/trans stereochemistry
+    @staticmethod
+    def remove_cis_trans(mol):
+        for bond in mol.GetBonds():
+            if (
+                bond.GetBondType() == Chem.BondType.DOUBLE
+                and bond.GetBeginAtom().GetAtomicNum() == 6
+                and bond.GetEndAtom().GetAtomicNum() == 6):
+                    bond.SetStereo(Chem.BondStereo.STEREONONE) #rdkit recomputes stereochemistry 
+                
+        Chem.AssignStereochemistry(mol, cleanIt=True, force=True)
+
+    # STEP 2 detect head atoms via SMARTS anchors
     @staticmethod
     def detect_head_atoms(mol):
         """
@@ -31,12 +149,11 @@ class LipidAnalysis:
 
         return head_atoms
 
-    # STEP 2 extract tails via graph traversal
+    # STEP 3 extract tails via graph traversal
     @staticmethod
     def extract_tails(mol, head_atoms):
         """
         Extract lipid hydrocarbon tails.
-
         1. Start from carbon atoms directly connected to the polar head.
         2. Traverse only through carbon atoms.
         3. Stop if we return to head atoms.
@@ -81,7 +198,7 @@ class LipidAnalysis:
 
         return tails
 
-    # STEP 3 compute tail signature
+    # STEP 4 compute tail signature
     @staticmethod
     def tail_signature(mol, tail_atoms):
         """
@@ -112,7 +229,7 @@ class LipidAnalysis:
 
         return (carbons, double_bonds)
 
-    # STEP 4: build lipid signature
+    # STEP 5: build lipid signature
     @staticmethod
     def lipid_signature(mol):
         head_atoms = LipidAnalysis.detect_head_atoms(mol)
@@ -130,18 +247,6 @@ class LipidAnalysis:
 
         return tuple(sorted(tail_sigs))
 
-    # STEP 5 remove cis/trans stereochemistry
-    @staticmethod
-    def remove_cis_trans(mol):
-        for bond in mol.GetBonds():
-            if (
-                bond.GetBondType() == Chem.BondType.DOUBLE
-                and bond.GetBeginAtom().GetAtomicNum() == 6
-                and bond.GetEndAtom().GetAtomicNum() == 6):
-                    bond.SetStereo(Chem.BondStereo.STEREONONE) #rdkit recomputes stereochemistry 
-                
-        Chem.AssignStereochemistry(mol, cleanIt=True, force=True)
-
     # STEP 6 compare molecules
     @staticmethod
     def equal_ignore_double_bond_position(mol1, mol2):
@@ -152,3 +257,7 @@ class LipidAnalysis:
             return Chem.MolToSmiles(mol1, canonical=True) == Chem.MolToSmiles(mol2, canonical=True)
 
         return sig1 == sig2
+    
+#TODO: CLASSYFIRE
+#TODO: take into account oxygens + hydrogens
+#TODO: take into account double bond positions!

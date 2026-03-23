@@ -171,9 +171,17 @@ class InChi:
         mol1 = InChi.neutralize_molecule(mol1)
         mol2 = InChi.neutralize_molecule(mol2)
 
-        #STEP 4: remoce cis/trans
+        #STEP 4: remove cis/trans
         LipidAnalysis.remove_cis_trans(mol1)
         LipidAnalysis.remove_cis_trans(mol2)
+
+        #TODO:
+        """
+        A) Cis/trans y resto idéntico
+        B) Posicion cadenas
+        C) Posición dobles enlaces y oxígeno
+        D) Número de dobles enlaces y oxígenos
+        """
 
         # STEP 5: double bond comparison
         return LipidAnalysis.equal_ignore_double_bond_position(mol1, mol2)
@@ -233,51 +241,6 @@ class InChi:
             return False
 
         return taut1 == taut2
-
-  
-    @staticmethod
-    def is_lipid(mol):
-        #query a classyfire
-        ester_count = 0
-        long_chain_count = 0
-
-        for bond in mol.GetBonds():
-
-            atom1 = bond.GetBeginAtom()
-            atom2 = bond.GetEndAtom()
-
-            # Detect ester bonds
-            if bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
-                if (atom1.GetSymbol() == "C" and atom2.GetSymbol() == "O") or \
-                (atom2.GetSymbol() == "C" and atom1.GetSymbol() == "O"):
-                    ester_count += 1
-
-        # Detect long carbon chains
-        for atom in mol.GetAtoms():
-            if atom.GetSymbol() != "C":
-                continue
-
-            chain_len = 0
-            visited = set()
-            stack = [atom.GetIdx()]
-
-            while stack:
-                idx = stack.pop()
-                if idx in visited:
-                    continue
-                visited.add(idx)
-                a = mol.GetAtomWithIdx(idx)
-                if a.GetSymbol() == "C":
-                    chain_len += 1
-                    for nbr in a.GetNeighbors():
-                        if nbr.GetSymbol() == "C":
-                            stack.append(nbr.GetIdx())
-
-            if chain_len >= 8:  # minimum length for fatty acyl
-                long_chain_count += 1
-
-        # lipid if at least 1 ester and at least 1 long chain
-        return ester_count >= 1 and long_chain_count >= 1
     
     @staticmethod
     def get_substituent_signatures(mol):
@@ -437,7 +400,8 @@ class InChi:
         sig2 = InChi.lipid_chain_signatures(mol2)
 
         #case 1: molecule is a lipid
-        if InChi.is_lipid(mol1) and InChi.is_lipid(mol2):
+        if (LipidAnalysis.is_lipid(inchi1, mol1) and
+            LipidAnalysis.is_lipid(inchi2, mol2)):
             return sig1 == sig2
         
         #case 2 - Murcko scaffold substituent comparison
