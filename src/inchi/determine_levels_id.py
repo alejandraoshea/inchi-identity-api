@@ -182,21 +182,43 @@ class InChi:
         mol1 = InChi.neutralize_molecule(mol1)
         mol2 = InChi.neutralize_molecule(mol2)
 
-        #STEP 4: remove cis/trans
+        # STEP 4: check if both molecules are lipids
+        if not (LipidAnalysis.is_lipid(inchi1, mol1) and LipidAnalysis.is_lipid(inchi2, mol2)):
+            return False  # double-bond comparison not applicable
+
+        #STEP 5: remove cis/trans
         LipidAnalysis.remove_cis_trans(mol1)
         LipidAnalysis.remove_cis_trans(mol2)
 
-        #TODO:
-        """
-        A) Cis/trans y resto idéntico
-        B) Posicion cadenas
-        C) Posición dobles enlaces y oxígeno
-        D) Número de dobles enlaces y oxígenos
-        """
-        # STEP 5: double bond comparison
-        levels = LipidAnalysis.lipid_identity_levels(mol1, mol2)
+        # STEP 6: extract tails
+        tails1 = LipidAnalysis.extract_detailed_tails(mol1)
+        tails2 = LipidAnalysis.extract_detailed_tails(mol2)
 
-        return levels["E3"]
+        # LEVEL A: exact chains (ignoring cis/trans)
+        LEVELA = tails1 == tails2
+
+        # LEVEL B: same chains ignoring position
+        LEVELB = sorted(tails1) == sorted(tails2)
+
+        # LEVEL C: same chains ignoring DB positions + oxygens
+        #TODO: correct this
+        sig1_C = sorted([(t["C"], t["DB"], t["O"]) for t in tails1])
+        sig2_C = sorted([(t["C"], t["DB"], t["O"]) for t in tails2])
+        LEVELC = sig1_C == sig2_C
+
+        # LEVEL D: same chaings ignoring number of DB and oxygens
+        total1 = (sum(t["C"] for t in tails1),
+                sum(t["DB"] for t in tails1),
+                sum(t["O"] for t in tails1))
+        total2 = (sum(t["C"] for t in tails2),
+                sum(t["DB"] for t in tails2),
+                sum(t["O"] for t in tails2))
+        LEVELD = total1 == total2
+
+        return {"LEVELA": LEVELA,
+                "LEVELB": LEVELB,
+                "LEVELC": LEVELC,
+                "LEVELD": LEVELD}
     
    
     def run_inchitrust(mol, inchitrust_path):
@@ -320,69 +342,6 @@ class InChi:
         scaffold, subs = InChi.get_substituent_signatures(mol)
         return (scaffold, subs)
     
-    @staticmethod
-    def lipid_chain_signatures(mol):
-            #extracts substituets
-            chains = []
-
-            for bond in mol.GetBonds():
-                #examine every bond
-                atom1 = bond.GetBeginAtom()
-                atom2 = bond.GetEndAtom()
-
-                # detect ester C=O and we identify the carbonyl atom
-                if bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
-                    if atom1.GetSymbol() == "C" and atom2.GetSymbol() == "O":
-                        carbon = atom1
-                    elif atom2.GetSymbol() == "C" and atom1.GetSymbol() == "O":
-                        carbon = atom2
-
-                    else:
-                        continue
-
-                    # follow carbon (FA) chain
-                    for nbr in carbon.GetNeighbors():
-                        if nbr.GetSymbol() == "C":
-                            #generate the canonical SMILES representation of substituents
-                            chain = Chem.MolFragmentToSmiles(
-                                mol,
-                                atomsToUse=[nbr.GetIdx()],
-                                canonical=True,
-                                isomericSmiles=False
-                            )
-
-                            chains.append(chain)
-
-                #ether detection
-                if bond.GetBondType() == Chem.rdchem.BondType.SINGLE:
-                    if atom1.GetSymbol() == "O" and atom2.GetSymbol() == "C":
-                        if atom1.GetDegree() > 1:
-                            for nbr in atom2.GetNeighbors():
-                                if nbr.GetSymbol() == "C" and nbr.GetIdx() != atom1.GetIdx():
-                                    chain = Chem.MolFragmentToSmiles(
-                                        mol,
-                                        atomsToUse=[nbr.GetIdx()],
-                                        canonical=True,
-                                        isomericSmiles=False
-                                    )
-                                    if chain.count("C") >= 8:
-                                        chains.append(chain)
-
-                    elif atom2.GetSymbol() == "O" and atom1.GetSymbol() == "C":
-                        if atom1.GetDegree() > 1:
-                            for nbr in atom1.GetNeighbors():
-                                if nbr.GetSymbol() == "C" and nbr.GetIdx() != atom2.GetIdx():
-                                    chain = Chem.MolFragmentToSmiles(
-                                        mol,
-                                        atomsToUse=[nbr.GetIdx()],
-                                        canonical=True,
-                                        isomericSmiles=False
-                                    )
-
-                                if chain.count("C") >= 8:
-                                    chains.append(chain)
-
-            return Counter(chains)
     
     @staticmethod
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
@@ -408,8 +367,8 @@ class InChi:
         LipidAnalysis.remove_cis_trans(mol1)
         LipidAnalysis.remove_cis_trans(mol2)
 
-        sig1 = InChi.lipid_chain_signatures(mol1)
-        sig2 = InChi.lipid_chain_signatures(mol2)
+        sig1 = LipidAnalysis.lipid_chain_signatures(mol1)
+        sig2 = LipidAnalysis.lipid_chain_signatures(mol2)
 
         #case 1: molecule is a lipid
         if (LipidAnalysis.is_lipid(inchi1, mol1) and
