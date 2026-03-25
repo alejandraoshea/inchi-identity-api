@@ -2,14 +2,7 @@ let RDKit;
 
 initRDKitModule().then(instance => {
     RDKit = instance;
-    loadExample();
 });
-
-function loadExample() {
-    document.getElementById("inchi1").value = "InChI=1S/C2H6O";
-    document.getElementById("inchi2").value = "InChI=1S/C3H6O";
-    draw();
-}
 
 async function draw() {
     const inchi1 = document.getElementById("inchi1").value.trim();
@@ -58,6 +51,14 @@ async function visualizeFromInchi(containerId, inchi) {
 }
 
 function compare() {
+    const inchi1 = document.getElementById("inchi1").value.trim();
+    const inchi2 = document.getElementById("inchi2").value.trim();
+
+    if (!inchi1 || !inchi2) {
+        alert("Please enter both InChI strings.");
+        return;
+    }
+
     draw();
 
     const results = {
