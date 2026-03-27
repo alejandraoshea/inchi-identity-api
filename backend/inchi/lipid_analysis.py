@@ -466,6 +466,3 @@ class LipidAnalysis:
 
         return sig1 == sig2
     
-#TODO: CLASSYFIRE
-#TODO: take into account oxygens + hydrogens
-#TODO: take into account double bond positions!

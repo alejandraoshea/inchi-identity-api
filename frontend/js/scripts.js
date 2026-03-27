@@ -50,7 +50,7 @@ async function visualizeFromInchi(containerId, inchi) {
     }
 }
 
-function compare() {
+async function compare(isAdvanced = false) {
     const inchi1 = document.getElementById("inchi1").value.trim();
     const inchi2 = document.getElementById("inchi2").value.trim();
 
@@ -61,49 +61,95 @@ function compare() {
 
     draw();
 
-    const results = {
-        complete: false,
-        isotope: true,
-        salt: true,
-        charge: true,
-        stereo: true,
-        double: false,
-        tautomer: true,
-        substituent: false
-    };
+    let url = "/api/compare_inchis";
+    let body = { inchi1, inchi2 };
 
-    updateLayers(results);
+    // ADVANCED MODE
+    if (isAdvanced) {
+        url = "/api/compare_inchis_custom";
+
+        const selectedLevels = [];
+        document.querySelectorAll(".layer input:checked").forEach(cb => {
+            selectedLevels.push(cb.value);
+        });
+
+        body.levels = selectedLevels;
+    }
+
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Error");
+            return;
+        }
+
+        updateLayers(data.results);
+
+    } catch (err) {
+        console.error(err);
+        alert("Server error");
+    }
 }
+
 
 function updateLayers(results) {
     document.querySelectorAll(".layer").forEach(layer => {
-        const key = layer.dataset.key;
+        const checkbox = layer.querySelector("input");
+        if (!checkbox) return;
+
+        const key = checkbox.value; 
         const match = results[key];
 
         layer.classList.remove("match", "nomatch");
-        layer.innerHTML = key;
 
-        const badge = document.createElement("span");
-        badge.classList.add("badge");
+        let badge = layer.querySelector(".badge");
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.classList.add("badge");
+            layer.appendChild(badge);
+        }
 
         if (match) {
             layer.classList.add("match");
-            badge.classList.add("green");
-            badge.innerText = "INDEPENDENT";
+            badge.className = "badge green";
+            badge.innerText = "MATCH";
         } else {
             layer.classList.add("nomatch");
-            badge.classList.add("red");
-            badge.innerText = "NOT INDEPENDENT";
+            badge.className = "badge red";
+            badge.innerText = "DIFFERENT";
         }
-
-        layer.appendChild(badge);
     });
 }
 
-function switchMode(mode, el) {
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    el.classList.add("active");
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        const mode = tab.dataset.mode;
 
-    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-    document.getElementById("mode-" + mode).classList.add("active");
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        document.getElementById("mode-" + mode).classList.add("active");
+    });
+});
+
+function updateLayerMode(mode) {
+    const checkboxes = document.querySelectorAll(".level-checkbox");
+
+    checkboxes.forEach(cb => {
+        if (mode === "advanced") {
+            cb.style.display = "inline-block";
+        } else {
+            cb.style.display = "none";
+        }
+    });
 }

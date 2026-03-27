@@ -20,22 +20,25 @@
     <div class="title">InChI Identity Levels Comparison</div></br>
 
     <div class="tabs">
-        <button class="tab active" onclick="switchMode(0,this)">Compare</button>
-        <button class="tab" onclick="switchMode(1,this)">Advanced</button>
-        <button class="tab" onclick="switchMode(2,this)">Files</button>
+        <button class="tab active" data-mode="compare">Compare</button>
+        <button class="tab" data-mode="advanced">Advanced</button>
+        <button class="tab" data-mode="files">Files</button>
     </div>
 
-    <div id="mode-0" class="tab-content active">
+    <div id="mode-compare" class="tab-content active">
         <textarea id="inchi1" placeholder="Molecule A (InChI)"></textarea>
         <textarea id="inchi2" placeholder="Molecule B (InChI)"></textarea>
         <button onclick="compare()">Compare</button>
     </div>
 
-    <div id="mode-1" class="tab-content">
-        <p class="muted">Advanced tools coming soon</p>
+    <div id="mode-advanced" class="tab-content">
+        <textarea id="inchi1" placeholder="Molecule A (InChI)"></textarea>
+        <textarea id="inchi2" placeholder="Molecule B (InChI)"></textarea>
+
+        <button onclick="compare(true)">Compare</button>
     </div>
 
-    <div id="mode-2" class="tab-content">
+    <div id="mode-files" class="tab-content">
         <p class="muted">File upload coming soon</p>
     </div>
 </div>
@@ -54,15 +57,61 @@
 </div>
 
 <div class="panel">
-    <div class="title">Comparison Layers</div></br>
-    <div class="layer" data-key="complete">Complete Identity</div>
-    <div class="layer" data-key="isotope">Isotopes Independence</div>
-    <div class="layer" data-key="salt">Salts Independence</div>
-    <div class="layer" data-key="charge">Charges Independence</div>
-    <div class="layer" data-key="stereo">Stereo Independence</div>
-    <div class="layer" data-key="double">Double Bonds Independence</div>
-    <div class="layer" data-key="tautomer">Tautomer Independence</div>
-    <div class="layer" data-key="substituent">Substituent Independence</div>
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="complete_identity">
+            Complete Identity
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="isotope">
+            Isotopes Independence
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="salt">
+            Salts Independence
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="charge">
+            Charges Independence
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="double_bond">
+            Double Bonds Independence
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="cis_trans">
+            Cis/Trans Independence
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="tautomer">
+            Tautomer Independence
+        </label>
+    </div>
+
+    <div class="layer">
+        <label>
+            <input type="checkbox" value="substituent">
+            Substituent Independence
+        </label>
+    </div>
 </div>
 
 </div>
