@@ -10,3 +10,5 @@ dependencies:
     - pyopenms>=3.4.0
     - requests
     - flask
+    - flask-cors
+    - dotenv
