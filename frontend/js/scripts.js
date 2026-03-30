@@ -20,6 +20,11 @@ function draw(inchi1, inchi2, id1 = "mol1", id2 = "mol2") {
 
 async function visualizeFromInchi(containerId, inchi) {
     const element = document.getElementById(containerId);
+
+    if (!element) {
+        console.error("Missing container:", containerId);
+        return;
+    }
     element.innerHTML = "";
 
     try {
@@ -216,72 +221,69 @@ document.getElementById("compare-files-btn").addEventListener("click", async () 
     });
 
     const data = await res.json();
-
     console.log("FILE RESULTS:", data);
-
     comparisonsData = data.comparisons;
-
     populateDropdown(comparisonsData);
 });
 
 function populateDropdown(comparisons) {
     const container = document.getElementById("file-results-container");
-
     container.innerHTML = "";
 
     comparisons.forEach((comp, index) => {
-
         const wrapper = document.createElement("div");
         wrapper.className = "file-item";
 
+        // Header for collapsing/expanding
         const header = document.createElement("div");
         header.className = "file-header";
-        header.textContent =
-            `${index + 1} — ${comp.inchi_1.substring(0,500)}...`;
+        header.textContent = `${index + 1} — ${comp.inchi_1.substring(0, 100)}...`;
 
+        // Content container
         const content = document.createElement("div");
         content.className = "file-content";
         content.style.display = "none";
 
+        // Molecules + layers structure
         content.innerHTML = `
-            <div style="display:flex; gap:10px;">
-                <div id="mol1-${index}" style="flex:1; height:300px;"></div>
-                <div id="mol2-${index}" style="flex:1; height:300px;"></div>
+            <div class="molecule-row">
+                <div class="molecule-card">
+                    <div class="molecule-header">Molecule A</div>
+                    <div id="mol1-${index}" class="molecule"></div>
+                </div>
+                <div class="molecule-card">
+                    <div class="molecule-header">Molecule B</div>
+                    <div id="mol2-${index}" class="molecule"></div>
+                </div>
             </div>
-            <div id="layers-${index}" style="margin-top:10px;"></div>
+            <div id="layers-${index}" class="layers-grid"></div>
         `;
 
         header.onclick = () => {
-            content.style.display =
-                content.style.display === "none" ? "block" : "none";
-
+            content.style.display = content.style.display === "none" ? "block" : "none";
             if (content.dataset.loaded) return;
 
-            setTimeout(() => {
-                draw(
-                    comp.inchi_1,
-                    comp.inchi_2,
-                    `mol1-${index}`,
-                    `mol2-${index}`
-                );
-            }, 100);
+            // Draw molecules after layout is ready
+            requestAnimationFrame(() => {
+                draw(comp.inchi_1, comp.inchi_2, `mol1-${index}`, `mol2-${index}`);
+            });
 
+            // Populate layers
             const layersDiv = content.querySelector(`#layers-${index}`);
             layersDiv.innerHTML = "";
+            layersDiv.className = "layers-grid";
 
             const mapped = mapBackendResults(comp.results);
-
             Object.entries(mapped).forEach(([key, val]) => {
                 const div = document.createElement("div");
                 div.className = "layer";
 
                 div.innerHTML = `
-                    <span>${key}</span>
+                    <span>${key.replace(/_/g, " ")}</span>
                     <span class="badge ${val ? "green" : "red"}">
                         ${val ? "INDEPENDENT" : "NOT"}
                     </span>
                 `;
-
                 layersDiv.appendChild(div);
             });
 
@@ -293,7 +295,6 @@ function populateDropdown(comparisons) {
         container.appendChild(wrapper);
     });
 }
-
 
 function renderComparison(comp) {
     const { inchi_1, inchi_2, results } = comp;
