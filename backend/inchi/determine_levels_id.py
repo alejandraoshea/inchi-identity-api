@@ -160,10 +160,12 @@ class InChi:
         inchi1_no_stereo = InChiParser.removeStereoLayers(inchi1)
         inchi2_no_stereo = InChiParser.removeStereoLayers(inchi2)
         return inchi1_no_stereo == inchi2_no_stereo
-
  
     #stereochemical layer - sublayer
     def areEqualNoPositionDoubleBond(inchi1: str, inchi2: str) -> bool:
+        if inchi1 == inchi2:
+            return True
+
         # STEP 1: remove isotopes
         inchi1 = InChiParser.removeIsotopicLayers(inchi1)
         inchi2 = InChiParser.removeIsotopicLayers(inchi2)
@@ -182,11 +184,16 @@ class InChi:
         mol1 = InChi.neutralize_molecule(mol1)
         mol2 = InChi.neutralize_molecule(mol2)
 
-        # STEP 4: check if both molecules are lipids
-        if not (LipidAnalysis.is_lipid(inchi1, mol1) and LipidAnalysis.is_lipid(inchi2, mol2)):
-            return False  # double-bond comparison not applicable
+        # STEP 4: lipid check
+        if not (LipidAnalysis.is_lipid(inchi1, mol1) and
+                LipidAnalysis.is_lipid(inchi2, mol2)):
 
-        #STEP 5: remove cis/trans
+            # fallback: simple structural comparison
+            sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
+            sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
+            return sig1 == sig2
+
+        # STEP 5: remove cis/trans
         LipidAnalysis.remove_cis_trans(mol1)
         LipidAnalysis.remove_cis_trans(mol2)
 
@@ -194,31 +201,33 @@ class InChi:
         tails1 = LipidAnalysis.extract_detailed_tails(mol1)
         tails2 = LipidAnalysis.extract_detailed_tails(mol2)
 
-        # LEVEL A: exact chains (ignoring cis/trans)
+        # LEVEL A
         LEVELA = tails1 == tails2
 
-        # LEVEL B: same chains ignoring position
+        # LEVEL B
         LEVELB = sorted(tails1) == sorted(tails2)
 
-        # LEVEL C: same chains ignoring DB positions + oxygens
-        #TODO: correct this
+        # LEVEL C
         sig1_C = sorted([(t["C"], t["DB"], t["O"]) for t in tails1])
         sig2_C = sorted([(t["C"], t["DB"], t["O"]) for t in tails2])
         LEVELC = sig1_C == sig2_C
 
-        # LEVEL D: same chaings ignoring number of DB and oxygens
-        total1 = (sum(t["C"] for t in tails1),
-                sum(t["DB"] for t in tails1),
-                sum(t["O"] for t in tails1))
-        total2 = (sum(t["C"] for t in tails2),
-                sum(t["DB"] for t in tails2),
-                sum(t["O"] for t in tails2))
+        # LEVEL D
+        total1 = (
+            sum(t["C"] for t in tails1),
+            sum(t["DB"] for t in tails1),
+            sum(t["O"] for t in tails1),
+        )
+
+        total2 = (
+            sum(t["C"] for t in tails2),
+            sum(t["DB"] for t in tails2),
+            sum(t["O"] for t in tails2),
+        )
+
         LEVELD = total1 == total2
 
-        return {"LEVELA": LEVELA,
-                "LEVELB": LEVELB,
-                "LEVELC": LEVELC,
-                "LEVELD": LEVELD}
+        return LEVELA or LEVELB or LEVELC or LEVELD
     
    
     def run_inchitrust(mol, inchitrust_path):
