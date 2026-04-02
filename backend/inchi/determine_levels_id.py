@@ -198,11 +198,14 @@ class InChi:
         LipidAnalysis.remove_cis_trans(mol2)
 
         # STEP 6: extract tails
-        tails1 = LipidAnalysis.extract_detailed_tails(mol1)
-        tails2 = LipidAnalysis.extract_detailed_tails(mol2)
+        tails1 = LipidAnalysis.extract_tails(mol1)
+        tails2 = LipidAnalysis.extract_tails(mol2)
 
         # LEVEL A
-        LEVELA = tails1 == tails2
+        sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
+        sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
+
+        LEVELA = sig1 == sig2
 
         # LEVEL B
         LEVELB = sorted(tails1) == sorted(tails2)
@@ -376,8 +379,11 @@ class InChi:
         LipidAnalysis.remove_cis_trans(mol1)
         LipidAnalysis.remove_cis_trans(mol2)
 
-        sig1 = LipidAnalysis.lipid_chain_signatures(mol1)
-        sig2 = LipidAnalysis.lipid_chain_signatures(mol2)
+        tails1 = LipidAnalysis.extract_tails(mol1)
+        tails2 = LipidAnalysis.extract_tails(mol2)
+        
+        sig1 = sorted((t["C"], t["DB"], t["O"]) for t in tails1)
+        sig2 = sorted((t["C"], t["DB"], t["O"]) for t in tails2)
 
         #case 1: molecule is a lipid
         if (LipidAnalysis.is_lipid(inchi1, mol1) and
