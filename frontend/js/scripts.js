@@ -25,28 +25,32 @@ async function visualizeFromInchi(containerId, inchi) {
         console.error("Missing container:", containerId);
         return;
     }
-    element.innerHTML = "";
+
+    element.innerHTML = "Loading...";
 
     try {
-        const res = await fetch("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchi/SDF?record_type=3d", {
+        const res = await fetch("http://127.0.0.1:5000/api/generate_3d", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `inchi=${encodeURIComponent(inchi)}`
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inchi })
         });
 
-        if (!res.ok) throw new Error();
-        const data = await res.text();
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error);
 
         const viewer = $3Dmol.createViewer(element, { backgroundColor: 'white' });
-        viewer.addModel(data, "sdf");
-        viewer.setStyle({}, { stick: { radius: 0.15 }, sphere: { scale: 0.25 } });
+        viewer.addModel(data.sdf, "sdf");
+        viewer.setStyle({}, { stick: {}, sphere: { scale: 0.3 } });
         viewer.zoomTo();
         viewer.render();
 
-    } catch {
+    } catch (e) {
+        console.error("3D failed → fallback 2D:", e);
+
         try {
-            const mol = RDKit.get_mol_from_inchi(inchi);
-            element.innerHTML = mol.get_svg();
+            const mol = RDKit.get_mol(inchi); 
+            element.innerHTML = mol ? mol.get_svg() : "Invalid InChI";
         } catch {
             element.innerHTML = "Invalid InChI";
         }
@@ -189,48 +193,53 @@ function showToast(message, type = "info", duration = 4000) {
 
 let file1Data = [];
 let file2Data = [];
-let comparisonsData = []; // store backend results
+let comparisonsData = [];
 
-document.getElementById("file1").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    file1Data = await readFile(file);
-    e.target.parentElement.textContent = file.name;
-});
+const file1Input = document.getElementById("file1");
+if (file1Input) {
+    file1Input.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        file1Data = await readFile(file);
+        e.target.parentElement.textContent = file.name;
+    });
+}
 
-document.getElementById("file2").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    file2Data = await readFile(file);
-    e.target.parentElement.textContent = file.name;
-});
+const file2Input = document.getElementById("file2");
+if (file2Input) {
+    file2Input.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        file2Data = await readFile(file);
+        e.target.parentElement.textContent = file.name;
+    });
+}
 
+const compareBtn = document.getElementById("compare-files-btn");
+if (compareBtn) {
+    compareBtn.addEventListener("click", async () => {
+        if (!file1Data.length || !file2Data.length) {
+            showToast("Upload both files", "error");
+            return;
+        }
 
+        const res = await fetch("http://127.0.0.1:5000/api/compare_files", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                list1: file1Data,
+                list2: file2Data
+            })
+        });
+
+        const data = await res.json();
+        comparisonsData = data.comparisons;
+        populateDropdown(comparisonsData);
+    });
+}
 
 async function readFile(file) {
     const text = await file.text();
     return text.split("\n").map(l => l.trim()).filter(Boolean);
 }
-
-document.getElementById("compare-files-btn").addEventListener("click", async () => {
-
-    if (!file1Data.length || !file2Data.length) {
-        showToast("Upload both files", "error");
-        return;
-    }
-
-    const res = await fetch("http://127.0.0.1:5000/api/compare_files", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            list1: file1Data,
-            list2: file2Data
-        })
-    });
-
-    const data = await res.json();
-    console.log("FILE RESULTS:", data);
-    comparisonsData = data.comparisons;
-    populateDropdown(comparisonsData);
-});
 
 function populateDropdown(comparisons) {
     const container = document.getElementById("file-results-container");
