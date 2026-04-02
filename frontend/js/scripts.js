@@ -66,6 +66,24 @@ async function compare(isAdvanced = false) {
         return;
     }
 
+    if (isAdvanced) {
+        const selectedLevels = document.querySelectorAll(".level-checkbox:checked");
+
+        if (selectedLevels.length === 0) {
+            showToast("Please select at least one identity level", "error");
+
+            const panel = document.getElementById("layers-advanced");
+
+            panel.classList.add("error-highlight");
+
+            setTimeout(() => {
+                panel.classList.remove("error-highlight");
+            }, 800);
+
+            return;
+        }
+    }
+
     draw(inchi1, inchi2);
 
     let url = "http://127.0.0.1:5000/api/compare_inchis";
@@ -172,7 +190,7 @@ function updateLayers(results, isAdvanced = false) {
     });
 }
 
-function showToast(message, type = "info", duration = 4000) {
+function showToast(message, type = "info") {
     const container = document.getElementById("toast-container");
     if (!container) return;
 
@@ -183,12 +201,12 @@ function showToast(message, type = "info", duration = 4000) {
     container.appendChild(toast);
 
     setTimeout(() => {
-        toast.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-        toast.style.transform = "translateX(100%)";
-        toast.style.opacity = "0";
+        toast.style.animation = "fadeOut 0.3s ease forwards";
 
-        toast.addEventListener("transitionend", () => toast.remove());
-    }, duration);
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 1500);
 }
 
 let file1Data = [];
@@ -313,3 +331,13 @@ function renderComparison(comp) {
     updateLayers(mapBackendResults(results), false);
     console.log("Selected:", comp);
 }
+
+function autoResizeTextarea(el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+}
+
+document.querySelectorAll("textarea").forEach(textarea => {
+    textarea.addEventListener("input", () => autoResizeTextarea(textarea));
+    autoResizeTextarea(textarea);
+});
