@@ -1,6 +1,7 @@
 from rdkit import Chem
 from rdkit.Chem import rdFMCS
 from rdkit.Chem import rdmolops
+from collections import Counter
 from rdkit.Chem import inchi, MolToSmiles
 from rdkit.Chem.SaltRemover import SaltRemover
 from backend.inchi.inchi_parser import InChiParser
@@ -147,9 +148,6 @@ class InChi:
             mol1 = InChi.neutralize_molecule(mol1)
             mol2 = InChi.neutralize_molecule(mol2)
 
-            print("1Molecule 1: ", mol1)
-            print("1Molecule 2: ", mol2)
-
             sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
             sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
 
@@ -191,16 +189,10 @@ class InChi:
         if not (LipidAnalysis.is_lipid(inchi1, mol1) and
                 LipidAnalysis.is_lipid(inchi2, mol2)):
 
-            print("2Molecule 1: ", mol1)
-            print("2Molecule 2: ", mol2)
-
             # fallback: simple structural comparison
             sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
             sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
             return sig1 == sig2
-
-        print("A1 Molecule 1: ", mol1)
-        print("A1 Molecule 2: ", mol2)
 
         # LEVEL A: exact except cis/trans
         mol1 = LipidAnalysis.remove_cis_trans(mol1)
@@ -400,12 +392,8 @@ class InChi:
         mol1 = tautomer_enumerator.Canonicalize(mol1)
         mol2 = tautomer_enumerator.Canonicalize(mol2)
 
-        # STEP 7: check if lipid using processed InChI and mol
         is_lipid1 = LipidAnalysis.is_lipid(inchi1, mol1, use_classyfire=False)
         is_lipid2 = LipidAnalysis.is_lipid(inchi2, mol2, use_classyfire=False)
-
-        # CASE 1: molecule is a lipid - extract tails AFTER all processing
-        from collections import Counter
 
         if is_lipid1 and is_lipid2:
             tails1 = LipidAnalysis.extract_tails(mol1)

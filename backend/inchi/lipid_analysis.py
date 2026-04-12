@@ -254,14 +254,14 @@ class LipidAnalysis:
                 "atoms": tuple(sorted(visited)),
             }
     
-    # STEP 3 extract tails via graph traversal - FIXED VERSION
+    # STEP 3 extract tails via graph traversal
     @staticmethod
     def extract_tails(mol):
-        # CRITICAL: Detect and exclude head atoms first
+        #Detect and exclude head atoms first
         head_atoms = LipidAnalysis.detect_head_atoms(mol)
         
         visited_global = set()
-        visited_global.update(head_atoms)  # Don't start chain walks from head atoms
+        visited_global.update(head_atoms)
         tails = []
 
         def walk_chain(start_atom_idx):
@@ -296,11 +296,11 @@ class LipidAnalysis:
                         if neighbor_idx == parent:
                             continue
                         
-                        # Stop at head atoms
+                        # stop at head atoms
                         if neighbor_idx in head_atoms:
                             continue
 
-                        # Continue carbon chain
+                        # continue carbon chain
                         if neighbor.GetAtomicNum() == 6:
                             if bond.GetBondType() == Chem.BondType.DOUBLE:
                                 double_bonds += 1
@@ -308,7 +308,7 @@ class LipidAnalysis:
 
                             stack.append((neighbor_idx, atom_idx))
 
-                        # Oxygen attached (but not in head)
+                        # oxygen attached (but not in head)
                         elif neighbor.GetAtomicNum() == 8:
                             oxygens += 1
                             o_positions.append(position)
@@ -325,7 +325,7 @@ class LipidAnalysis:
 
             return None
 
-        # Start from all carbons NOT in the headgroup
+        # start from all carbons NOT in the headgroup
         for atom in mol.GetAtoms():
             if atom.GetAtomicNum() == 6:
                 idx = atom.GetIdx()
@@ -339,7 +339,7 @@ class LipidAnalysis:
                     tails.append(tail)
                     visited_global.update(tail["atoms"])
 
-        # Deduplicate by atoms
+        # deduplicate by atoms
         unique = []
         seen_atoms = set()
 
@@ -374,7 +374,7 @@ class LipidAnalysis:
             counts[atom.GetSymbol()] += 1
         return counts
     
-    # STEP 4 compute tail signature
+    # STEP 4: compute tail signature
     @staticmethod
     def tail_signature(mol, tail_atoms):
         """
