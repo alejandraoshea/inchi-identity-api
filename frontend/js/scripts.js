@@ -58,41 +58,28 @@ async function visualizeFromInchi(containerId, inchi) {
 }
 
 async function compare(isAdvanced = false) {
-    const inchi1 = isAdvanced ? document.getElementById("inchi1_adv").value.trim() : document.getElementById("inchi1").value.trim();
-    const inchi2 = isAdvanced ? document.getElementById("inchi2_adv").value.trim() : document.getElementById("inchi2").value.trim();
+    const inchi1 = isAdvanced 
+        ? document.getElementById("inchi1_adv").value.trim() 
+        : document.getElementById("inchi1").value.trim();
+
+    const inchi2 = isAdvanced 
+        ? document.getElementById("inchi2_adv").value.trim() 
+        : document.getElementById("inchi2").value.trim();
 
     if (!inchi1 || !inchi2) {
         showToast("Please enter both InChIs", "error");
         return;
     }
 
-    if (isAdvanced) {
-        const selectedLevels = document.querySelectorAll(".level-checkbox:checked");
-
-        if (selectedLevels.length === 0) {
-            showToast("Please select at least one identity level", "error");
-
-            const panel = document.getElementById("layers-advanced");
-
-            panel.classList.add("error-highlight");
-
-            setTimeout(() => {
-                panel.classList.remove("error-highlight");
-            }, 800);
-
-            return;
-        }
-    }
-
-    draw(inchi1, inchi2);
+    setLoadingState(true);
 
     let url = "http://127.0.0.1:5000/api/compare_inchis";
     let body = { inchi1, inchi2 };
 
     if (isAdvanced) {
         url = "http://127.0.0.1:5000/api/compare_inchis_custom";
-        body.levels = Array.from(document.querySelectorAll(".level-checkbox:checked")).map(cb => cb.value);
-        console.log("SELECTED LEVELS:", body.levels);
+        body.levels = Array.from(document.querySelectorAll(".level-checkbox:checked"))
+            .map(cb => cb.value);
     }
 
     try {
@@ -103,10 +90,8 @@ async function compare(isAdvanced = false) {
         });
 
         const text = await res.text();
-
-        console.log("RAW RESPONSE:", text);
-
         let data;
+
         try {
             data = JSON.parse(text);
         } catch {
@@ -118,13 +103,45 @@ async function compare(isAdvanced = false) {
             showToast(data.message || "Error", "error");
             return;
         }
-        if (!res.ok) { showToast(data.message || "Error", "error"); return; }
 
+        draw(inchi1, inchi2);
         updateLayers(mapBackendResults(data.results), isAdvanced);
 
     } catch (err) {
         console.error(err);
         showToast("Server error", "error");
+    } finally {
+        setLoadingState(false);
+    }
+}
+
+function setLoadingState(isLoading) {
+    const layers = document.querySelectorAll(".layer");
+    const button = document.querySelector("button[onclick='compare()']");
+
+    layers.forEach(layer => {
+        let badge = layer.querySelector(".badge");
+
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.classList.add("badge");
+            layer.appendChild(badge);
+        }
+
+        if (isLoading) {
+            badge.dataset.previous = badge.innerText;
+
+            badge.innerText = "LOADING...";
+            badge.classList.remove("green", "red");
+            badge.classList.add("loading");
+        } else {
+            badge.classList.remove("loading");
+        }
+    });
+
+    if (button) {
+        button.disabled = isLoading;
+        button.innerText = isLoading ? "Comparing..." : "Compare";
     }
 }
 
