@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from backend.inchi.determine_levels_id import InChi
-from backend.inchi.compare import compare_pair, compare_text_files
+from backend.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
 from backend.inchi.config_loader import load_config, build_config_from_levels
 import tempfile
 from dotenv import load_dotenv
@@ -85,6 +85,27 @@ def compare_files_api():
         config = load_config()
 
         result = compare_text_files(list1, list2, config)
+        return jsonify(result)
+
+    except Exception as e:
+        print("ERROR:", e)
+        return jsonify({"message": str(e)}), 500
+    
+
+@inchi_comparison_routes.route("/api/compare_files_mgf", methods=["POST"])
+def compare_files_mgf_api():
+    try:
+        data = request.get_json()
+
+        list1 = data.get("list1", [])
+        list2 = data.get("list2", [])
+
+        if not list1 or not list2:
+            return jsonify({"message": "Both lists required"}), 400
+
+        config = load_config()
+
+        result = compare_mgf_files(list1, list2, config)
         return jsonify(result)
 
     except Exception as e:
