@@ -168,56 +168,6 @@ class LipidAnalysis:
 
         return ester, amide, ether
 
-    """
-    @staticmethod
-    def lipid_identity_levels(mol1, mol2):
-        Returns lipid identity levels
-        Level A: Cis/trans y resto idéntico
-        Level B: Posicion cadenas
-        Level C: Posición dobles enlaces y oxígeno
-        Level D: Número total de carbonos, dobles enlaces y oxígenos
-
-        # STEP A: remove cis/trans
-        mol1 = Chem.Mol(mol1)
-        mol2 = Chem.Mol(mol2)
-
-        LipidAnalysis.remove_cis_trans(mol1)
-        LipidAnalysis.remove_cis_trans(mol2)
-
-        tails1 = LipidAnalysis.extract_tails(mol1)
-        tails2 = LipidAnalysis.extract_tails(mol2)
-
-        sig1 = MolToSmiles(mol1, canonical=True)
-        sig2 = MolToSmiles(mol2, canonical=True)
-        LEVELA = sig1 == sig2
-        LEVELB = sorted(tails1) == sorted(tails2)
-
-        comp1 = sorted([(t["C"], t["DB"], t["O"]) for t in tails1])
-        comp2 = sorted([(t["C"], t["DB"], t["O"]) for t in tails2])
-        LEVELC = comp1 == comp2
-
-        total1 = (
-            sum(t["C"] for t in tails1),
-            sum(t["DB"] for t in tails1),
-            sum(t["O"] for t in tails1),
-        )
-
-        total2 = (
-            sum(t["C"] for t in tails2),
-            sum(t["DB"] for t in tails2),
-            sum(t["O"] for t in tails2),
-        )
-
-        LEVELD = total1 == total2
-
-        return {
-            "A": LEVELA,
-            "B": LEVELB,
-            "C": LEVELC,
-            "D": LEVELD
-        }
-    """
-
     # STEP 1 remove cis/trans stereochemistry
     @staticmethod
     def remove_cis_trans(mol):
@@ -248,10 +198,70 @@ class LipidAnalysis:
 
         return head_atoms
 
-    # STEP 3 extract tails via graph traversal
+    @staticmethod
+    def walk_chain(start_atom, coming_from):
+            stack = [(start_atom, None)]
+            visited = set()
+
+            carbons = 0
+            double_bonds = 0
+            oxygens = 0
+
+            db_positions = []
+            o_positions = []
+
+            position = 0  # relative position along chain
+
+            while stack:
+                atom, prev = stack.pop()
+                idx = atom.GetIdx()
+
+                if idx in visited:
+                    continue
+                visited.add(idx)
+
+                if atom.GetSymbol() == "C":
+                    carbons += 1
+                    position += 1
+                elif atom.GetSymbol() == "O":
+                    oxygens += 1
+                    o_positions.append(position)
+
+                for bond in atom.GetBonds():
+                    nbr = bond.GetOtherAtom(atom)
+
+                    if prev is not None and nbr.GetIdx() == prev:
+                        continue
+
+                    # detect C=C double bonds
+                    if (
+                        bond.GetBondType() == Chem.rdchem.BondType.DOUBLE
+                        and atom.GetSymbol() == "C"
+                        and nbr.GetSymbol() == "C"
+                    ):
+                        double_bonds += 1
+                        db_positions.append(position)
+
+                    if nbr.GetSymbol() in ["C", "O"]:
+                        stack.append((nbr, atom.GetIdx()))
+
+            return {
+                "C": carbons,
+                "DB": double_bonds,
+                "O": oxygens,
+                "DB_positions": tuple(sorted(db_positions)),
+                "O_positions": tuple(sorted(o_positions)),
+                "atoms": tuple(sorted(visited)),
+            }
+    
+    # STEP 3 extract tails via graph traversal - FIXED VERSION
     @staticmethod
     def extract_tails(mol):
+        # CRITICAL: Detect and exclude head atoms first
+        head_atoms = LipidAnalysis.detect_head_atoms(mol)
+        
         visited_global = set()
+        visited_global.update(head_atoms)  # Don't start chain walks from head atoms
         tails = []
 
         def walk_chain(start_atom_idx):
@@ -269,7 +279,7 @@ class LipidAnalysis:
             while stack:
                 atom_idx, parent = stack.pop()
 
-                if atom_idx in visited:
+                if atom_idx in visited or atom_idx in head_atoms:
                     continue
 
                 visited.add(atom_idx)
@@ -285,8 +295,12 @@ class LipidAnalysis:
 
                         if neighbor_idx == parent:
                             continue
+                        
+                        # Stop at head atoms
+                        if neighbor_idx in head_atoms:
+                            continue
 
-                        # continue carbon chain
+                        # Continue carbon chain
                         if neighbor.GetAtomicNum() == 6:
                             if bond.GetBondType() == Chem.BondType.DOUBLE:
                                 double_bonds += 1
@@ -294,7 +308,7 @@ class LipidAnalysis:
 
                             stack.append((neighbor_idx, atom_idx))
 
-                        # oxygen attached
+                        # Oxygen attached (but not in head)
                         elif neighbor.GetAtomicNum() == 8:
                             oxygens += 1
                             o_positions.append(position)
@@ -306,12 +320,12 @@ class LipidAnalysis:
                     "O": oxygens,
                     "DB_positions": tuple(sorted(db_positions)),
                     "O_positions": tuple(sorted(o_positions)),
-                    "atoms": tuple(sorted(visited)), 
+                    "atoms": tuple(sorted(visited)),
                 }
 
             return None
 
-        # start from all carbons
+        # Start from all carbons NOT in the headgroup
         for atom in mol.GetAtoms():
             if atom.GetAtomicNum() == 6:
                 idx = atom.GetIdx()
@@ -325,7 +339,7 @@ class LipidAnalysis:
                     tails.append(tail)
                     visited_global.update(tail["atoms"])
 
-        # deduplicate by atoms only
+        # Deduplicate by atoms
         unique = []
         seen_atoms = set()
 
@@ -354,6 +368,12 @@ class LipidAnalysis:
             t["O"],
         )
 
+    def atom_count(mol):
+        counts = Counter()
+        for atom in mol.GetAtoms():
+            counts[atom.GetSymbol()] += 1
+        return counts
+    
     # STEP 4 compute tail signature
     @staticmethod
     def tail_signature(mol, tail_atoms):
@@ -393,7 +413,7 @@ class LipidAnalysis:
         if not head_atoms:
             return None
 
-        tails = LipidAnalysis.extract_tails(mol)
+        tails = LipidAnalysis.extract_tails(mol, head_atoms)
         tail_sigs = []
 
         for tail in tails:
@@ -413,4 +433,3 @@ class LipidAnalysis:
             return Chem.MolToSmiles(mol1, canonical=True) == Chem.MolToSmiles(mol2, canonical=True)
 
         return sig1 == sig2
-    

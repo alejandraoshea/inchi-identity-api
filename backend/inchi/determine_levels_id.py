@@ -147,6 +147,9 @@ class InChi:
             mol1 = InChi.neutralize_molecule(mol1)
             mol2 = InChi.neutralize_molecule(mol2)
 
+            print("1Molecule 1: ", mol1)
+            print("1Molecule 2: ", mol2)
+
             sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
             sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
 
@@ -188,10 +191,16 @@ class InChi:
         if not (LipidAnalysis.is_lipid(inchi1, mol1) and
                 LipidAnalysis.is_lipid(inchi2, mol2)):
 
+            print("2Molecule 1: ", mol1)
+            print("2Molecule 2: ", mol2)
+
             # fallback: simple structural comparison
             sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
             sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
             return sig1 == sig2
+
+        print("A1 Molecule 1: ", mol1)
+        print("A1 Molecule 2: ", mol2)
 
         # LEVEL A: exact except cis/trans
         mol1 = LipidAnalysis.remove_cis_trans(mol1)
@@ -286,14 +295,6 @@ class InChi:
         mol1 = InChi.neutralize_molecule(mol1)
         mol2 = InChi.neutralize_molecule(mol2)
 
-        tails1 = LipidAnalysis.extract_tails(mol1)
-        tails2 = LipidAnalysis.extract_tails(mol2)
-        sig1 = sorted((t["C"], t["DB"], t["O"]) for t in tails1)
-        sig2 = sorted((t["C"], t["DB"], t["O"]) for t in tails2)
-
-        if sig1 !=sig2:
-            return False
-
         # STEP 4: generate canonical tautomer
         taut1 = InChi.run_inchitrust(mol1, inchitrust_path)
         taut2 = InChi.run_inchitrust(mol2, inchitrust_path)
@@ -382,35 +383,61 @@ class InChi:
         if mol1 is None or mol2 is None:
             return False
 
-        #STEP 2: remove salts
+        # STEP 2: remove salts
         mol1 = InChi.main_fragment(mol1)
         mol2 = InChi.main_fragment(mol2)
 
-        #Step 3: charges
+        # STEP 3: neutralize charges
         mol1 = InChi.neutralize_molecule(mol1)
         mol2 = InChi.neutralize_molecule(mol2)
 
-        #STEP 4: cis/trans 
+        # STEP 4: remove cis/trans
         mol1 = LipidAnalysis.remove_cis_trans(mol1)
         mol2 = LipidAnalysis.remove_cis_trans(mol2)
 
-        tails1 = LipidAnalysis.extract_tails(mol1)
-        tails2 = LipidAnalysis.extract_tails(mol2)
-        
-        sig1 = sorted((t["C"], t["DB"], t["O"]) for t in tails1)
-        sig2 = sorted((t["C"], t["DB"], t["O"]) for t in tails2)
-
+        # STEP 5: canonicalize tautomers
         tautomer_enumerator = rdMolStandardize.TautomerEnumerator()
-
         mol1 = tautomer_enumerator.Canonicalize(mol1)
         mol2 = tautomer_enumerator.Canonicalize(mol2)
 
-        #case 1: molecule is a lipid
-        if (LipidAnalysis.is_lipid(inchi1, mol1) and
-            LipidAnalysis.is_lipid(inchi2, mol2)):
-            return sig1 == sig2
+        # STEP 7: check if lipid using processed InChI and mol
+        is_lipid1 = LipidAnalysis.is_lipid(inchi1, mol1, use_classyfire=False)
+        is_lipid2 = LipidAnalysis.is_lipid(inchi2, mol2, use_classyfire=False)
+
+        # CASE 1: molecule is a lipid - extract tails AFTER all processing
+        from collections import Counter
+
+        if is_lipid1 and is_lipid2:
+            tails1 = LipidAnalysis.extract_tails(mol1)
+            tails2 = LipidAnalysis.extract_tails(mol2)
+
+            sigs1 = [LipidAnalysis.tail_sig_levelC(t) for t in tails1]
+            sigs2 = [LipidAnalysis.tail_sig_levelC(t) for t in tails2]
+
+            if Counter(sigs1) == Counter(sigs2):
+                return True
+
+            total1 = (
+                sum(t["C"] for t in tails1),
+                sum(t["DB"] for t in tails1),
+                sum(t["O"] for t in tails1),
+            )
+
+            total2 = (
+                sum(t["C"] for t in tails2),
+                sum(t["DB"] for t in tails2),
+                sum(t["O"] for t in tails2),
+            )
+
+            if total1 == total2:
+                return True
+
+            if LipidAnalysis.atom_count(mol1) == LipidAnalysis.atom_count(mol2):
+                return True
+
+            return False
         
-        #case 2 - Murcko scaffold substituent comparison
+        # CASE 2: not lipids - use Murcko scaffold substituent comparison
         sig1 = InChi.substituent_position_independent_signature(inchi1)
         sig2 = InChi.substituent_position_independent_signature(inchi2)
 
