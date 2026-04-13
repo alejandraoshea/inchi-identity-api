@@ -1,7 +1,7 @@
 [project]
 name = "identity-levels-inchi"
 version = "0.1.0"
-description = "Identity Levels Comparator for InChI with lipid-aware substituent independence"
+description = "InChI identity comparison across multiple chemical abstraction levels"
 authors = [
     { name = "alejandraoshea", email = "alejandraosheafdez@gmail.com" }
 ]
@@ -22,3 +22,6 @@ keywords = ["chemistry", "inchi", "rdkit", "lipids", "cheminformatics"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
