@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 from backend.inchi.config_loader import load_config
-from backend.inchi.determine_levels_id import InChi
+from backend.inchi.determine_levels_id import InChI
 from backend.inchi.mgf_parser import MgfParser
 
 def compare_pair(inchi1, inchi2, config):
-    comparison = InChi.get_ids(inchi1, inchi2, config)
+    comparison = InChI.get_ids(inchi1, inchi2, config)
 
     return {
         "inchi_1": inchi1,
@@ -18,7 +18,7 @@ def compare_text_files(list1, list2, config):
 
     for i1 in list1:
         for i2 in list2:
-            comparison = InChi.get_ids(i1, i2, config)
+            comparison = InChI.get_ids(i1, i2, config)
 
             results.append({
                 "inchi_1": i1,
@@ -39,7 +39,7 @@ def compare_mgf_files(file1, file2, config):
 
     for i1 in list1:
         for i2 in list2:
-            comparison = InChi.get_ids(i1, i2, config)
+            comparison = InChI.get_ids(i1, i2, config)
 
             results.append({
                 "inchi_1": i1,

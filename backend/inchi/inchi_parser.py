@@ -1,6 +1,6 @@
 from rdkit import Chem
 
-class InChiParser:
+class InChIParser:
     def getMainLayer(inchi: str): #obtains chemical formula
         parts = inchi.split("/")
         for layer in parts:
@@ -142,8 +142,8 @@ class InChiParser:
         if inchi is None:
             return None
 
-        main = InChiParser.getMainLayer(inchi)
-        conn = InChiParser.getAtomConnectionsSublayer(inchi)
+        main = InChIParser.getMainLayer(inchi)
+        conn = InChIParser.getAtomConnectionsSublayer(inchi)
 
         if main and conn:
             return (main, conn)

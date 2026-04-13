@@ -4,7 +4,7 @@ from rdkit.Chem import rdmolops
 from collections import Counter
 from rdkit.Chem import inchi, MolToSmiles
 from rdkit.Chem.SaltRemover import SaltRemover
-from backend.inchi.inchi_parser import InChiParser
+from backend.inchi.inchi_parser import InChIParser
 from backend.inchi.inchi_layers_enum import InchiLayers
 from backend.inchi.lipid_analysis import LipidAnalysis
 import subprocess, os
@@ -12,7 +12,7 @@ from rdkit.Chem.Scaffolds import MurckoScaffold
 from collections import Counter
 from rdkit.Chem.MolStandardize import rdMolStandardize
 
-class InChi:
+class InChI:
     def isCompleteIdentity(inchi1: str, inchi2: str) -> bool:
         return inchi1 == inchi2
 
@@ -39,19 +39,19 @@ class InChi:
             return mol
     
     def areEqualNoIsotopes(inchi1: str, inchi2: str) -> bool:
-        inchi1_isotopes = InChiParser.removeIsotopicLayers(inchi1)
-        inchi2_isotopes = InChiParser.removeIsotopicLayers(inchi2)
+        inchi1_isotopes = InChIParser.removeIsotopicLayers(inchi1)
+        inchi2_isotopes = InChIParser.removeIsotopicLayers(inchi2)
         return inchi1_isotopes == inchi2_isotopes
     
     def areEqualDisolvedSalts(inchi1: str, inchi2: str) -> bool:
-        mol1 = InChi.mol_from_inchi(inchi1)
-        mol2 = InChi.mol_from_inchi(inchi2)
+        mol1 = InChI.mol_from_inchi(inchi1)
+        mol2 = InChI.mol_from_inchi(inchi2)
 
         if not mol1 or not mol2:
             return False    
 
-        main1 = InChi.main_fragment(mol1)
-        main2 = InChi.main_fragment(mol2)
+        main1 = InChI.main_fragment(mol1)
+        main2 = InChI.main_fragment(mol2)
 
         try:
             inchi_main1 = inchi.MolToInchi(main1)
@@ -105,18 +105,18 @@ class InChi:
 
     def areEqualNoCharges(inchi1: str, inchi2: str) -> bool:
         # STEP 1: remove isotopes
-        inchi1 = InChiParser.removeIsotopicLayers(inchi1)
-        inchi2 = InChiParser.removeIsotopicLayers(inchi2)
+        inchi1 = InChIParser.removeIsotopicLayers(inchi1)
+        inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
-        mol1 = InChi.mol_from_inchi(inchi1)
-        mol2 = InChi.mol_from_inchi(inchi2)
+        mol1 = InChI.mol_from_inchi(inchi1)
+        mol2 = InChI.mol_from_inchi(inchi2)
 
         if mol1 is None or mol2 is None:
             return False
 
         # STEP 2: remove salts
-        mol1 = InChi.main_fragment(mol1)
-        mol2 = InChi.main_fragment(mol2)
+        mol1 = InChI.main_fragment(mol1)
+        mol2 = InChI.main_fragment(mol2)
 
         # we convert back to InChI so we can inspect p/q layers
         inchi1 = Chem.MolToInchi(mol1)
@@ -126,27 +126,27 @@ class InChi:
         inchi2 = inchi2.strip()
 
         # STEP 3: charge layers
-        p1_plus, p1_minus, q1_plus, q1_minus = InChi.get_charge_info(inchi1)
-        p2_plus, p2_minus, q2_plus, q2_minus = InChi.get_charge_info(inchi2)
+        p1_plus, p1_minus, q1_plus, q1_minus = InChI.get_charge_info(inchi1)
+        p2_plus, p2_minus, q2_plus, q2_minus = InChI.get_charge_info(inchi2)
 
         # CASE 1: p+N → remove p layer
         if (p1_plus or p2_plus) and not (p1_minus or p2_minus or q1_minus or q2_minus):
-            inchi1 = InChi.remove_only_p_layer(inchi1)
-            inchi2 = InChi.remove_only_p_layer(inchi2)
+            inchi1 = InChI.remove_only_p_layer(inchi1)
+            inchi2 = InChI.remove_only_p_layer(inchi2)
 
             return inchi1 == inchi2
 
         # CASE 2: q-N or p-N → neutralize molecules
         if p1_minus or p2_minus or q1_minus or q2_minus:
 
-            mol1 = InChi.mol_from_inchi(inchi1)
-            mol2 = InChi.mol_from_inchi(inchi2)
+            mol1 = InChI.mol_from_inchi(inchi1)
+            mol2 = InChI.mol_from_inchi(inchi2)
 
             if mol1 is None or mol2 is None:
                 return False
 
-            mol1 = InChi.neutralize_molecule(mol1)
-            mol2 = InChi.neutralize_molecule(mol2)
+            mol1 = InChI.neutralize_molecule(mol1)
+            mol2 = InChI.neutralize_molecule(mol2)
 
             sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
             sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
@@ -158,8 +158,8 @@ class InChi:
 
  
     def areEqualNoStereo(inchi1: str, inchi2: str) -> bool:
-        inchi1_no_stereo = InChiParser.removeStereoLayers(inchi1)
-        inchi2_no_stereo = InChiParser.removeStereoLayers(inchi2)
+        inchi1_no_stereo = InChIParser.removeStereoLayers(inchi1)
+        inchi2_no_stereo = InChIParser.removeStereoLayers(inchi2)
         return inchi1_no_stereo == inchi2_no_stereo
  
     #stereochemical layer - sublayer
@@ -168,22 +168,22 @@ class InChi:
             return True
 
         # STEP 1: remove isotopes
-        inchi1 = InChiParser.removeIsotopicLayers(inchi1)
-        inchi2 = InChiParser.removeIsotopicLayers(inchi2)
+        inchi1 = InChIParser.removeIsotopicLayers(inchi1)
+        inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
-        mol1 = InChi.mol_from_inchi(inchi1)
-        mol2 = InChi.mol_from_inchi(inchi2)
+        mol1 = InChI.mol_from_inchi(inchi1)
+        mol2 = InChI.mol_from_inchi(inchi2)
 
         if mol1 is None or mol2 is None:
             return False
 
         # STEP 2: remove salts
-        mol1 = InChi.main_fragment(mol1)
-        mol2 = InChi.main_fragment(mol2)
+        mol1 = InChI.main_fragment(mol1)
+        mol2 = InChI.main_fragment(mol2)
 
         # STEP 3: neutralize charges
-        mol1 = InChi.neutralize_molecule(mol1)
-        mol2 = InChi.neutralize_molecule(mol2)
+        mol1 = InChI.neutralize_molecule(mol1)
+        mol2 = InChI.neutralize_molecule(mol2)
 
         # STEP 4: lipid check
         if not (LipidAnalysis.is_lipid(inchi1, mol1) and
@@ -270,26 +270,26 @@ class InChi:
             )
 
         # STEP 1: remove isotope layers
-        inchi1 = InChiParser.removeIsotopicLayers(inchi1)
-        inchi2 = InChiParser.removeIsotopicLayers(inchi2)
+        inchi1 = InChIParser.removeIsotopicLayers(inchi1)
+        inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
-        mol1 = InChi.mol_from_inchi(inchi1)
-        mol2 = InChi.mol_from_inchi(inchi2)
+        mol1 = InChI.mol_from_inchi(inchi1)
+        mol2 = InChI.mol_from_inchi(inchi2)
 
         if mol1 is None or mol2 is None:
             return False
 
         # STEP 2: remove salts
-        mol1 = InChi.main_fragment(mol1)
-        mol2 = InChi.main_fragment(mol2)
+        mol1 = InChI.main_fragment(mol1)
+        mol2 = InChI.main_fragment(mol2)
 
         # STEP 3: neutralize charges
-        mol1 = InChi.neutralize_molecule(mol1)
-        mol2 = InChi.neutralize_molecule(mol2)
+        mol1 = InChI.neutralize_molecule(mol1)
+        mol2 = InChI.neutralize_molecule(mol2)
 
         # STEP 4: generate canonical tautomer
-        taut1 = InChi.run_inchitrust(mol1, inchitrust_path)
-        taut2 = InChi.run_inchitrust(mol2, inchitrust_path)
+        taut1 = InChI.run_inchitrust(mol1, inchitrust_path)
+        taut2 = InChI.run_inchitrust(mol2, inchitrust_path)
 
         if taut1 is None or taut2 is None:
             return False
@@ -298,7 +298,7 @@ class InChi:
     
     @staticmethod
     def get_substituent_signatures(mol):
-        mol = InChi.main_fragment(mol)
+        mol = InChI.main_fragment(mol)
         scaffold = MurckoScaffold.GetScaffoldForMol(mol)
 
         # detect molecules with no Murcko scaffold (e.g. lipids)
@@ -354,34 +354,34 @@ class InChi:
     
     @staticmethod
     def substituent_position_independent_signature(inchi: str):
-        mol = InChi.mol_from_inchi(inchi)
+        mol = InChI.mol_from_inchi(inchi)
 
         if mol is None:
             return None
 
-        scaffold, subs = InChi.get_substituent_signatures(mol)
+        scaffold, subs = InChI.get_substituent_signatures(mol)
         return (scaffold, subs)
     
     
     @staticmethod
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
         # STEP 1: remove isotopes
-        inchi1 = InChiParser.removeIsotopicLayers(inchi1)
-        inchi2 = InChiParser.removeIsotopicLayers(inchi2)
+        inchi1 = InChIParser.removeIsotopicLayers(inchi1)
+        inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
-        mol1 = InChi.mol_from_inchi(inchi1)
-        mol2 = InChi.mol_from_inchi(inchi2)
+        mol1 = InChI.mol_from_inchi(inchi1)
+        mol2 = InChI.mol_from_inchi(inchi2)
 
         if mol1 is None or mol2 is None:
             return False
 
         # STEP 2: remove salts
-        mol1 = InChi.main_fragment(mol1)
-        mol2 = InChi.main_fragment(mol2)
+        mol1 = InChI.main_fragment(mol1)
+        mol2 = InChI.main_fragment(mol2)
 
         # STEP 3: neutralize charges
-        mol1 = InChi.neutralize_molecule(mol1)
-        mol2 = InChi.neutralize_molecule(mol2)
+        mol1 = InChI.neutralize_molecule(mol1)
+        mol2 = InChI.neutralize_molecule(mol2)
 
         # STEP 4: remove cis/trans
         mol1 = LipidAnalysis.remove_cis_trans(mol1)
@@ -426,8 +426,8 @@ class InChi:
             return False
         
         # CASE 2: not lipids - use Murcko scaffold substituent comparison
-        sig1 = InChi.substituent_position_independent_signature(inchi1)
-        sig2 = InChi.substituent_position_independent_signature(inchi2)
+        sig1 = InChI.substituent_position_independent_signature(inchi1)
+        sig2 = InChI.substituent_position_independent_signature(inchi2)
 
         return sig1 == sig2
 
@@ -441,38 +441,38 @@ class InChi:
         # COMPLETE IDENTITY
         if criteria["complete_identity"]["enabled"]:
             results[InchiLayers.COMPLETE_IDENTITY] = (
-                InChi.isCompleteIdentity(inchi1, inchi2)
+                InChI.isCompleteIdentity(inchi1, inchi2)
             )
 
         # ISOTOPES
         if criteria["isotope_independence"]["isotope_independent_identity"]:
             results[InchiLayers.ISOTOPIC_INDEPENDENCE] = (
-                InChi.areEqualNoIsotopes(inchi1, inchi2)
+                InChI.areEqualNoIsotopes(inchi1, inchi2)
             )
 
         # SALTS
         if criteria["salt_independence"]["desalted_identity"]:
             results[InchiLayers.SALTS_INDEPENDENCE] = (
-                InChi.areEqualDisolvedSalts(inchi1, inchi2)
+                InChI.areEqualDisolvedSalts(inchi1, inchi2)
             )
 
         # CHARGES
         if criteria["charge_independence"]["charge_independent_identity"]:
             results[InchiLayers.CHARGES_INDEPENDENCE] = (
-                InChi.areEqualNoCharges(inchi1, inchi2)
+                InChI.areEqualNoCharges(inchi1, inchi2)
             )
 
         #ISOMER
         # DOUBLE BOND POSITION
         if criteria["isomer_independence"]["double_bond_position_independent_identity"]:
             results[InchiLayers.DOUBLE_BONDS_INDEPENDENCE] = (
-                InChi.areEqualNoPositionDoubleBond(inchi1, inchi2)
+                InChI.areEqualNoPositionDoubleBond(inchi1, inchi2)
             )
 
         # CIS/TRANS
         if criteria["isomer_independence"]["cis_trans_independent_identity"]:
             results[InchiLayers.STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE] = (
-                InChi.areEqualNoStereo(inchi1, inchi2)
+                InChI.areEqualNoStereo(inchi1, inchi2)
             )
 
         # TAUTOMERS
@@ -481,13 +481,13 @@ class InChi:
         if tautomer_cfg.get("tautomer_independent_identity", False):
             inchitrust_path = tautomer_cfg.get("inchitrust_path")
             results[InchiLayers.TAUTOMER_INDEPENDENCE] = (
-                InChi.areEqualTautomers(inchi1, inchi2, inchitrust_path)
+                InChI.areEqualTautomers(inchi1, inchi2, inchitrust_path)
             )
 
         # SUBSTITUENT POSITION INDEPENDENCE
         if tautomer_cfg.get("substituent_position_independent_identity", False):
             results[InchiLayers.SUBSTITUENT_POSITION_INDEPENDENCE] = (
-                InChi.areEqualSubstituentIndependent(inchi1, inchi2)
+                InChI.areEqualSubstituentIndependent(inchi1, inchi2)
             )
 
         return results

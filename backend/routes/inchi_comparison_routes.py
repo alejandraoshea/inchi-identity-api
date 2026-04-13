@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from backend.inchi.determine_levels_id import InChi
+from backend.inchi.determine_levels_id import InChI
 from backend.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
 from backend.inchi.config_loader import load_config, build_config_from_levels
 import tempfile
