@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python=3.12.11
   - pip
+  - rdkit
   - pip:
     - pandas
     - pyopenms>=3.4.0
