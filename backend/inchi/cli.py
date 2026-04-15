@@ -2,7 +2,7 @@ import argparse
 import json
 
 from backend.inchi.compare import compare_text_files, compare_pair, compare_mgf_files
-from backend.inchi.config_loader import load_config, build_config_from_levels
+from backend.inchi.config_loader import load_config, build_config_from_levels, apply_inchitrust
 
 def main():
     parser = argparse.ArgumentParser(
@@ -32,6 +32,8 @@ def main():
         default=None
     )
 
+    add_inchitrust_arg(compare_parser)
+
     pair_parser = subparsers.add_parser(
         "compare-pair",
         help="Compare two InChIs"
@@ -45,6 +47,8 @@ def main():
         help="Path to config.json",
         default=None
     )
+
+    add_inchitrust_arg(pair_parser)
 
     pair_levels_parser = subparsers.add_parser(
         "compare-pair-levels",
@@ -67,6 +71,8 @@ def main():
         default=None
     )
 
+    add_inchitrust_arg(pair_levels_parser)
+
     mgf_parser = subparsers.add_parser(
         "compare-mgf",
         help="Compare two MGF metabolomics files"
@@ -80,6 +86,8 @@ def main():
         help="Path to config.json",
         default=None
     )
+
+    add_inchitrust_arg(mgf_parser)
 
     args = parser.parse_args()
 
@@ -100,6 +108,7 @@ def main():
 
     elif args.command == "compare-pair":
         config = load_config(args.config)
+        config = apply_inchitrust(config, args.inchitrust)
 
         result = compare_pair(
             args.inchi1,
@@ -111,6 +120,7 @@ def main():
 
     elif args.command == "compare-pair-levels":
         base_config = load_config(args.config)
+        base_config = apply_inchitrust(config, args.inchitrust)
 
         config = build_config_from_levels(
             args.levels,
@@ -127,6 +137,7 @@ def main():
 
     elif args.command == "compare-mgf":
         config = load_config(args.config)
+        config = apply_inchitrust(config, args.inchitrust)
 
         result = compare_mgf_files(
             args.file1,
@@ -139,6 +150,12 @@ def main():
     else:
         parser.print_help()
 
+def add_inchitrust_arg(parser):
+    parser.add_argument(
+        "--inchitrust",
+        help="Path to InChI Trust executable",
+        default=None
+    )
 
 if __name__ == "__main__":
     main()

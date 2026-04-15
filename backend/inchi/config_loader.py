@@ -54,3 +54,12 @@ def build_config_from_levels(selected_levels, base_config):
             config["identity_criteria"][section][key] = True
 
     return config
+
+
+def apply_inchitrust(config, path):
+    path = validate_inchitrust_path(path)
+
+    if path:
+        config["identity_criteria"]["tautomer_independence"]["inchitrust_path"] = path
+
+    return config
