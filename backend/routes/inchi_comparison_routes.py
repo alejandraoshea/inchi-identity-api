@@ -78,13 +78,14 @@ def compare_files_api():
 
         list1 = data.get("list1", [])
         list2 = data.get("list2", [])
+        mode = data.get("mode", "pairwise") 
 
         if not list1 or not list2:
             return jsonify({"message": "Both lists required"}), 400
 
         config = load_config()
 
-        result = compare_text_files(list1, list2, config)
+        result = compare_text_files(list1, list2, config, mode=mode)
         return jsonify(result)
 
     except Exception as e:
