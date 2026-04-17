@@ -13,20 +13,50 @@ def compare_pair(inchi1, inchi2, config):
         "results": {k.name: v for k, v in comparison.items()}
     }
 
-def compare_text_files(list1, list2, config):
+def compare_text_files(list1, list2, config, mode="pairwise"):
     results = []
 
-    for i1 in list1:
-        for i2 in list2:
+    def extract_false_layers(comparison):
+        return {
+            k.name: False
+            for k, v in comparison.items()
+            if not bool(v)
+        }
+
+    if mode == "pairwise":
+        for i1, i2 in zip(list1, list2):
             comparison = InChI.get_ids(i1, i2, config)
+
+            false_layers = extract_false_layers(comparison)
+
+            # skip if identical
+            if not false_layers:
+                continue
 
             results.append({
                 "inchi_1": i1,
                 "inchi_2": i2,
-                "results": {k.name: v for k, v in comparison.items()}
+                "differences": false_layers
             })
 
+    elif mode == "cross":
+        for i1 in list1:
+            for i2 in list2:
+                comparison = InChI.get_ids(i1, i2, config)
+
+                false_layers = extract_false_layers(comparison)
+
+                if not false_layers:
+                    continue
+
+                results.append({
+                    "inchi_1": i1,
+                    "inchi_2": i2,
+                    "differences": false_layers
+                })
+
     return {"comparisons": results}
+
 
 def compare_mgf_files(file1, file2, config):
     entries1 = MgfParser.parse_mgf(file1)

@@ -34,6 +34,12 @@ def main():
 
     add_inchitrust_arg(compare_parser)
 
+    compare_parser.add_argument(
+        "--only-differences",
+        action="store_true",
+        help="Show only comparisons with differences"
+    )
+
     pair_parser = subparsers.add_parser(
         "compare-pair",
         help="Compare two InChIs"
@@ -97,7 +103,8 @@ def main():
         result = compare_text_files(
             args.file1,
             args.file2,
-            config
+            config,
+            only_differences=args.only_differences
         )
 
         if args.output_file:
