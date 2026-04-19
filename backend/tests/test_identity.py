@@ -1,5 +1,6 @@
 import unittest
 from inchi.determine_levels_id import InChI
+from rdkit import Chem
 
 class TestInChI(unittest.TestCase):
     def test_complete_identity(self):
@@ -17,9 +18,9 @@ class TestInChI(unittest.TestCase):
         self.assertTrue(InChI.areEqualNoIsotopes(inchi1, inchi2))
 
     def test_are_equal_diluted_salts(self):
-        inchi_a = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
-        inchi_b = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
-        self.assertTrue(InChI.areEqualDisolvedSalts(inchi_a, inchi_b))
+        inchi1 = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
+        inchi2 = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
+        self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
 
     def test_equal_salts_anion(self):
         inchi1 = "InChI=1S/C23H45NO4.ClH/c1-5-6-7-8-9-10-11-12-13-14-15-16-17-18-23(27)28-21(19-22(25)26)20-24(2,3)4;/h21H,5-20H2,1-4H3;1H"
@@ -29,6 +30,18 @@ class TestInChI(unittest.TestCase):
     def test_equal_salts_cation(self):
         inchi1= "InChI=1S/C2H4O2.Na/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
         inchi2="InChI=1S/C2H4O2.K/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
+        self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
+
+    def test_different_metal_cations(self):
+        # Acetato de Litio
+        inchi1 = "InChI=1S/C2H4O2.Li/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
+        # Acetato de Calcio
+        inchi2 = "InChI=1S/2C2H4O2.Ca/c2*1-2(3)4;/h2*1H3,(H,3,4);/q;;+2/p-2"
+        self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
+
+    def test_hydrate_vs_anhydrous(self):
+        inchi1 = "InChI=1S/C2H2O4/c3-1(4)2(5)6/h(H,3,4)(H,5,6)"
+        inchi2 = "InChI=1S/C2H2O4.H2O/c3-1(4)2(5)6;/h(H,3,4)(H,5,6);1H2"
         self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
 
     def test_equals_without_charges1(self):
@@ -45,10 +58,10 @@ class TestInChI(unittest.TestCase):
         inchi1="InChI=1S/C10H16N5O13P3/c11-8-5-9(13-2-12-8)15(3-14-5)10-7(17)6(16)4(26-10)1-25-30(21,22)28-31(23,24)27-29(18,19)20/h2-4,6-7,10,16-17H,1H2,(H,21,22)(H,23,24)(H2,11,12,13)(H2,18,19,20)/p-2/t4-,6-,7-,10-/m1/s1"
         inchi2="InChI=1S/C10H16N5O13P3/c11-8-5-9(13-2-12-8)15(3-14-5)10-7(17)6(16)4(26-10)1-25-30(21,22)28-31(23,24)27-29(18,19)20/h2-4,6-7,10,16-17H,1H2,(H,21,22)(H,23,24)(H2,11,12,13)(H2,18,19,20)/p+1/t4-,6-,7-,10-/m1/s1"
         self.assertTrue(InChI.areEqualNoCharges(inchi1, inchi2))
- 
+
     def test_equals_without_charges4(self):
         inchi1="InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1"
-        inchi2="InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3 "
+        inchi2="InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3"
         self.assertTrue(InChI.areEqualNoCharges(inchi1, inchi2))
 
     def test_equal_no_position_double_bond(self):
