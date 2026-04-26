@@ -62,27 +62,38 @@ def compare_text_files(list1, list2, config, mode="pairwise", only_equal=False):
     return {"comparisons": results}
 
 
-def compare_mgf_files(file1, file2, config, only_equal=False):
+def compare_mgf_files(file1, file2, config, level="COMPLETE_IDENTITY"):
     entries1 = MgfParser.parse_mgf(file1)
     entries2 = MgfParser.parse_mgf(file2)
 
-    list1 = MgfParser.extract_inchis(entries1)
-    list2 = MgfParser.extract_inchis(entries2)
+    structs1 = MgfParser.extract_structures(entries1)
+    structs2 = MgfParser.extract_structures(entries2)
 
-    results = []
+    all_structs = structs1 + structs2
 
-    for i1 in list1:
-        for i2 in list2:
-            comparison = InChI.get_ids(i1, i2, config)
-            matches = extract_matches(comparison)
+    groups = []
 
-            if not matches:
-                continue
+    for item in all_structs:
+        placed = False
 
-            results.append({
-                "inchi_1": i1,
-                "inchi_2": i2,
-                "matches": matches
+        for group in groups:
+            rep = group["representative"]
+
+            comparison = InChI.get_ids(
+                item["structure"],
+                rep,
+                config
+            )
+
+            if comparison.get(level):
+                group["entries"].append(item["entry"])
+                placed = True
+                break
+
+        if not placed:
+            groups.append({
+                "representative": item["structure"],
+                "entries": [item["entry"]]
             })
 
-    return {"comparisons": results}
+    return {"groups": groups}

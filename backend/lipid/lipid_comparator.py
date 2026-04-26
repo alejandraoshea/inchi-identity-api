@@ -3,11 +3,10 @@ from functools import lru_cache
 from rdkit import Chem
 from rdkit.Chem import MolToSmiles
 from collections import Counter
-from backend.inchi.lipid_tail_extraction import TailExtractor
-from backend.inchi.lipid_comparator import LipidComparator
+from backend.lipid.lipid_tail_extraction import TailExtractor
+from backend.lipid.lipid_comparator import LipidComparator
 
 class LipidComparator:
-    # STEP 5: build lipid signature
     @staticmethod
     def lipid_signature(mol):
         """
@@ -20,7 +19,7 @@ class LipidComparator:
 
         tails = TailExtractor.extract_tails(mol)
         
-        # Use already-computed values - no recomputation needed
+        # use already-computed values - no recomputation needed
         return tuple(
             sorted([
                 (tail["C"], tail["DB"], tuple(sorted(tail["O_positions"])))
@@ -28,7 +27,6 @@ class LipidComparator:
             ])
         )
     
-    # STEP 6 compare molecules
     @staticmethod
     def equal_ignore_double_bond_position(mol1, mol2):
         sig1 = LipidComparator.lipid_signature(mol1)

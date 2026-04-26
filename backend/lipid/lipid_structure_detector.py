@@ -26,7 +26,6 @@ class LipidHeadValidator:
     This class checks whether fatty acids are attached at the CORRECT positions
     on the lipid headgroup (sn-1, sn-2, sn-3, etc.).
     """
-    
     HEADGROUP_PATTERNS = {
         # glycosylglycerols
         "glycosylglycerol_sn1": HeadgroupPattern(
@@ -217,7 +216,6 @@ class LipidHeadValidator:
         """
         matches = self.get_matching_patterns(mol)
         if matches:
-            # Return the first match (most specific)
             return matches[0].lipid_class
         return None
     

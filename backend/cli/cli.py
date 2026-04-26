@@ -66,6 +66,10 @@ def main():
         "--only-equal",
         action="store_true"
     )
+    mgf_parser.add_argument(
+        "--level",
+        default="COMPLETE_IDENTITY"
+    )
 
     add_inchitrust_arg(mgf_parser)
     args = parser.parse_args()
@@ -120,12 +124,13 @@ def main():
     elif args.command == "compare-mgf":
         config = load_config(args.config)
         config = apply_inchitrust(config, args.inchitrust)
+        
 
         result = compare_mgf_files(
             args.file1,
             args.file2,
             config,
-            only_equal=args.only_equal
+            level=args.level
         )
 
         print(json.dumps(result, indent=2))

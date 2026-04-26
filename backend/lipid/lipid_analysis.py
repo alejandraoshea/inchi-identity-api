@@ -177,33 +177,3 @@ class LipidAnalysis:
             counts[atom.GetSymbol()] += 1
         return counts
     
-    # STEP 4: compute tail signature
-    @staticmethod
-    def tail_signature(mol, tail_atoms):
-        """
-        Converts a tail into a simple numeric signature:
-        CH3-(CH2)16-CH=CH-COOH into (18 carbons, 1 double bond)
-        """
-        carbons = 0
-        double_bonds = 0
-
-        for idx in tail_atoms:
-            atom = mol.GetAtomWithIdx(idx)
-
-            #we count C atoms
-            if atom.GetAtomicNum() == 6:
-                carbons += 1
-
-            for bond in atom.GetBonds():
-                #we count double bonds
-                if bond.GetBondType() == Chem.BondType.DOUBLE:
-                    double_bonds += 1
-
-        #each bond appears twice in transversal
-        double_bonds = double_bonds // 2
-
-        #discard fragments that are too short
-        if carbons < LipidAnalysis.MIN_TAIL_CARBONS:
-            return None
-
-        return (carbons, double_bonds)

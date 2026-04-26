@@ -31,3 +31,22 @@ class MgfParser:
                 inchis.append(entry["SMILES"]) 
 
         return inchis
+    
+    def extract_structures(entries):
+        result = []
+
+        for entry in entries:
+            structure = None
+
+            if "INCHI" in entry:
+                structure = entry["INCHI"]
+            elif "SMILES" in entry:
+                structure = entry["SMILES"]
+
+            if structure:
+                result.append({
+                    "structure": structure,
+                    "entry": entry
+                })
+
+        return result

@@ -5,7 +5,6 @@ from rdkit.Chem import MolToSmiles
 from collections import Counter
 
 class TailExtractor:
-    # STEP 2 detect head atoms via SMARTS anchors
     @staticmethod
     def detect_head_atoms(mol):
         head_atoms = set()
@@ -19,7 +18,6 @@ class TailExtractor:
 
         return head_atoms
     
-    # STEP 3 extract tails via graph traversal
     @staticmethod
     def extract_tails(mol):
         #Detect and exclude head atoms first
