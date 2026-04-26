@@ -78,8 +78,7 @@ def main():
             args.file1,
             args.file2,
             config,
-            mode=args.mode,
-            only_differences=args.only_differences
+            mode=args.mode
         )
 
         if args.output_file:
@@ -124,8 +123,7 @@ def main():
         result = compare_mgf_files(
             args.file1,
             args.file2,
-            config,
-            only_differences=args.only_differences
+            config
         )
 
         print(json.dumps(result, indent=2))

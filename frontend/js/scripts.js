@@ -359,7 +359,7 @@ function populateDropdown(comparisons) {
             }, 0);
 
             const layersDiv = card.querySelector(`#layers-${groupIndex}-${index}`);
-            const mapped = mapBackendResults(comp.results || comp.differences || {});
+            const mapped = mapBackendResults(comp.results || comp.matches || {});
 
             Object.keys(layerLabels).forEach(key => {
                 const val = mapped[key];
@@ -370,14 +370,14 @@ function populateDropdown(comparisons) {
 
                 div.innerHTML = `
                     <span class="layer-label">${layerLabels[key]}</span>
-                    <span class="badge red">DIFF</span>
+                    <span class="badge green">EQUAL</span>
                 `;
 
                 layersDiv.appendChild(div);
             });
 
             if (layersDiv.children.length === 0) {
-                layersDiv.innerHTML = `<div class="layer">No differences</div>`;
+                layersDiv.innerHTML = `<div class="layer">No matching identity levels</div>`;
             }
         });
 
@@ -417,19 +417,19 @@ function renderPairwise(comparisons) {
         draw(comp.inchi_1, comp.inchi_2, `mol1-${index}`, `mol2-${index}`);
 
         const layersDiv = card.querySelector(`#layers-${index}`);
-        const mapped = mapBackendResults(comp.results || comp.differences || {});
+        const mapped = mapBackendResults(comp.results || comp.matches || {});
 
         Object.keys(layerLabels).forEach(key => {
             const val = mapped[key];
 
-            if (val === null) return; 
+            if (val !== true) return; 
 
             const div = document.createElement("div");
-            div.className = "layer";
+            div.className = "layer match";
 
             div.innerHTML = `
                 <span class="layer-label">${layerLabels[key]}</span>
-                <span class="badge red">DIFF</span>
+                <span class="badge green">EQUAL</span>
             `;
 
             layersDiv.appendChild(div);
