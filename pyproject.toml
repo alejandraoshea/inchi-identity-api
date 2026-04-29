@@ -14,7 +14,10 @@ dependencies = [
     "requests",
     "flask",
     "flask-cors",
-    "python-dotenv"
+    "python-dotenv",
+    "pillow",
+    "py3Dmol", 
+    "requests"
 ]
 
 keywords = ["chemistry", "inchi", "rdkit", "lipids", "cheminformatics"]
@@ -26,16 +29,5 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 inchi = "backend.cli.cli:main"
 
-[tool.setuptools]
-packages = [
-    "backend",
-    "backend.cli",
-    "backend.configs",
-    "backend.inchi",
-    "backend.lipid",
-    "backend.parsers",
-    "backend.routes",
-    "backend.input",
-    "backend.output",
-    "backend.tests"
-]
+[tool.setuptools.packages.find]
+where = ["."]
