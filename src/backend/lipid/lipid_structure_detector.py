@@ -33,7 +33,6 @@ class LipidHeadValidator:
             smarts="O[C@H]1[C@H](OC[C@H](O)C[OX2][CX3](=O)[#6])O[C@H](CO[C@H]2O[C@H](CO)[C@H](O)[C@H](O)[C@H]2O)[C@H](O)[C@@H]1O",
             lipid_class="Glycoglycerolipids",
             fa_positions=["sn-1"],
-            description="Your teacher's example - FA attached at the correct glycerol position"
         ),
         
         #diacylglycerols (DG)
@@ -141,6 +140,35 @@ class LipidHeadValidator:
             fa_positions=["N-acyl"],
             description="SM with phosphocholine headgroup"
         ),
+
+        "sterol_core": HeadgroupPattern(
+            name="Sterol core",
+            smarts="[C@]12CC[C@H]3[C@@H](CC[C@]4(C)[C@@H]3CC=C4)C1CCC2",
+            lipid_class="Sterols",
+            fa_positions=[],
+            description="Steroid nucleus"
+        ),
+
+        "plasmalogen": HeadgroupPattern(
+            name="Plasmalogen",
+            smarts="[CH2X4][CHX4]([CH2X4][OX2][CH]=[CH])[OX2][PX4]",
+            lipid_class="Ether phospholipids",
+            fa_positions=["sn-1", "sn-2"],
+        ),
+
+        "fatty_acid": HeadgroupPattern(
+            name="Fatty acid",
+            smarts="[CX3](=O)[OX2H1]",
+            lipid_class="Fatty acids",
+            fa_positions=[]
+        ),
+
+        "ganglioside_core": HeadgroupPattern(
+            name="Ganglioside core",
+            smarts="C(O[C@H]1O[C@H](CO)[C@H](O)[C@H](O)[C@H]1O)",
+            lipid_class="Gangliosides",
+            fa_positions=["N-acyl"]
+        ),
         
         #TODO: ADD MORE
     }
@@ -215,9 +243,7 @@ class LipidHeadValidator:
             Lipid class name (e.g., "Glycoglycerolipids") or None
         """
         matches = self.get_matching_patterns(mol)
-        if matches:
-            return matches[0].lipid_class
-        return None
+        return sorted(set(m.lipid_class for m in matches)) if matches else []
     
     def validate_structure(self, mol: Chem.Mol, verbose: bool = False) -> Dict:
         """

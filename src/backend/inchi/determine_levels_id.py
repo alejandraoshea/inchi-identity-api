@@ -429,7 +429,7 @@ class InChI:
             class2 = validator.identify_lipid_class(mol2)
 
             if class1 and class2:
-                if class1 != class2:
+                if class1 and class2 and class1.isdisjoint(class2):
                     return False
 
             elif class1 or class2:
