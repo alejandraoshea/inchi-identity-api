@@ -1,6 +1,6 @@
 import unittest
 from rdkit import Chem
-from src.backend.lipid.lipid_structure_detector import LipidHeadValidator
+from backend.lipid.lipid_structure_detector import LipidHeadValidator
 
 
 class TestLipidHeadValidator(unittest.TestCase):

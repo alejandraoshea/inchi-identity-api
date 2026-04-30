@@ -1,5 +1,5 @@
 import unittest
-from src.backend.inchi.determine_levels_id import InChI
+from inchi.determine_levels_id import InChI
 from rdkit import Chem
 
 class TestInChI(unittest.TestCase):
