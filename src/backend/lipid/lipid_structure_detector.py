@@ -136,7 +136,7 @@ class LipidHeadValidator:
         #sphingomyelins (SM)
         "sphingomyelin": HeadgroupPattern(
             name="Sphingomyelin (SM)",
-            smarts="[NX3][CX3](=O)[#6].*OP(=O)([O-])OCC[N+](C)(C)C",
+            smarts="[NX3H1,NX3H2][CX3](=[OX1])[#6]",  # N-acyl amide linkage
             lipid_class="Sphingomyelins",
             fa_positions=["N-acyl"],
             description="SM - detects N-acyl FA on sphingoid base"
@@ -183,16 +183,17 @@ class LipidHeadValidator:
 
         "fatty_acid": HeadgroupPattern(
             name="Fatty acid",
-            smarts="[CX3](=O)[OX2H1,O-][CX4][CX4,CX3]~[CX4,CX3]~[CX4,CX3]~[CX4,CX3]",
+            smarts="[CX3](=O)[OX2H1]",
             lipid_class="Fatty acids",
             fa_positions=[]
         ),
 
         "ganglioside_core": HeadgroupPattern(
             name="Ganglioside core",
-            smarts="C(O[C@H]1O[C@H](CO)[C@H](O)[C@H](O)[C@H]1O)",
+            smarts="[NX3H1][CX3](=[OX1])[#6].[CH]1O[CH](CO)[CH](O)[CH](O)[CH]1O",
             lipid_class="Gangliosides",
-            fa_positions=["N-acyl"]
+            fa_positions=["N-acyl"],
+            description="Ganglioside - requires ceramide base with sugar"
         ),
         
         #TODO: ADD MORE
@@ -200,16 +201,16 @@ class LipidHeadValidator:
     
     def __init__(self):
         """Initialize the validator and compile all SMARTS patterns."""
-        self._compiled_patterns: Dict[str, Tuple[HeadgroupPattern, Chem.Mol]] = {}
-        self._compile_patterns()
+        self.compiled_patterns: Dict[str, Tuple[HeadgroupPattern, Chem.Mol]] = {}
+        self.compile_patterns()
     
-    def _compile_patterns(self):
+    def compile_patterns(self):
         """Compile all SMARTS patterns for efficient matching."""
         for pattern_id, pattern in self.HEADGROUP_PATTERNS.items():
             try:
                 mol_pattern = Chem.MolFromSmarts(pattern.smarts)
                 if mol_pattern is not None:
-                    self._compiled_patterns[pattern_id] = (pattern, mol_pattern)
+                    self.compiled_patterns[pattern_id] = (pattern, mol_pattern)
                 else:
                     print(f"Warning: Failed to compile pattern '{pattern_id}': {pattern.name}")
             except Exception as e:
@@ -225,11 +226,25 @@ class LipidHeadValidator:
         Returns:
             True if molecule matches the pattern (FA in correct position)
         """
-        if pattern_id not in self._compiled_patterns:
+        if pattern_id not in self.compiled_patterns:
             return False
         
-        _, mol_pattern = self._compiled_patterns[pattern_id]
-        return mol.HasSubstructMatch(mol_pattern)
+        _, mol_pattern = self.compiled_patterns[pattern_id]
+        match = mol.HasSubstructMatch(mol_pattern)
+
+        if not match:
+            return False
+        
+        # 1. Fatty acid must REALLY exist
+        if pattern_id in ["glycosylglycerol_sn1"]:
+            if not self.has_fatty_acid_tail(mol):
+                return False
+            
+        if pattern_id == "fatty_acid":
+            if not self.has_fatty_acid_tail(mol):
+                return False
+
+        return True
     
     def matches_any_valid_head(self, mol: Chem.Mol) -> bool:
         """
@@ -239,7 +254,7 @@ class LipidHeadValidator:
         Returns:
             True if molecule has a recognized lipid headgroup with FA in correct position
         """
-        for pattern_id in self._compiled_patterns:
+        for pattern_id in self.compiled_patterns:
             if self.matches_pattern(mol, pattern_id):
                 return True
         return False
@@ -254,10 +269,39 @@ class LipidHeadValidator:
             List of matching HeadgroupPattern objects
         """
         matches = []
-        for pattern_id, (pattern_info, mol_pattern) in self._compiled_patterns.items():
+        for pattern_id, (pattern_info, mol_pattern) in self.compiled_patterns.items():
             if self.matches_pattern(mol, pattern_id):
                 matches.append(pattern_info)
         return matches
+    
+    def has_fatty_acid_tail(self, mol: Chem.Mol, min_carbons: int = 6) -> bool:
+        """Check if molecule has at least one long carbon chain (fatty acid-like)."""
+        for atom in mol.GetAtoms():
+            if atom.GetAtomicNum() != 6:
+                continue
+
+            visited = set()
+            stack = [(atom.GetIdx(), 0)]
+
+            while stack:
+                idx, length = stack.pop()
+                if idx in visited:
+                    continue
+
+                visited.add(idx)
+                atom_obj = mol.GetAtomWithIdx(idx)
+
+                if atom_obj.GetAtomicNum() != 6:
+                    continue
+
+                length += 1
+                if length >= min_carbons:
+                    return True
+
+                for nbr in atom_obj.GetNeighbors():
+                    stack.append((nbr.GetIdx(), length))
+
+        return False
     
     def identify_lipid_class(self, mol: Chem.Mol) -> List[str]:  # Note: List[str] not Optional[str]
         """
@@ -269,7 +313,6 @@ class LipidHeadValidator:
         """
         matches = self.get_matching_patterns(mol)
         return sorted(set(m.lipid_class for m in matches)) if matches else []
-        # Returns: ['Sphingomyelins'] or [] or ['Glycoglycerolipids', 'Neutral glycosphingolipids']
     
     
     def validate_structure(self, mol: Chem.Mol, verbose: bool = False) -> Dict:
