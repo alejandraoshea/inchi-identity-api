@@ -518,15 +518,15 @@ class InChI:
                 InChI.areEqualNoCharges(inchi1, inchi2)
             )
 
-        #ISOMER
+        #STEREOCHEMICAL
         # DOUBLE BOND POSITION
-        if criteria["isomer_independence"]["double_bond_position_independent_identity"]:
+        if criteria["setereochemical_independent"]["double_bond_position_independent_identity"]:
             results[InchiLayers.DOUBLE_BONDS_INDEPENDENCE] = (
                 InChI.areEqualNoPositionDoubleBond(inchi1, inchi2)
             )
 
         # CIS/TRANS
-        if criteria["isomer_independence"]["cis_trans_independent_identity"]:
+        if criteria["setereochemical_independent"]["cis_trans_independent_identity"]:
             results[InchiLayers.STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE] = (
                 InChI.areEqualNoStereo(inchi1, inchi2)
             )
