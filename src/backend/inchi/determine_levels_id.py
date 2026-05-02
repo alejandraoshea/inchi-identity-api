@@ -170,9 +170,30 @@ class InChI:
         return inchi1 == inchi2
  
     def areEqualNoStereo(inchi1: str, inchi2: str) -> bool:
-        inchi1_no_stereo = InChIParser.removeStereoLayers(inchi1)
-        inchi2_no_stereo = InChIParser.removeStereoLayers(inchi2)
-        return inchi1_no_stereo == inchi2_no_stereo
+        if inchi1 == inchi2:
+            return True
+
+        # STEP 1: remove isotopes
+        inchi1 = InChIParser.removeIsotopicLayers(inchi1)
+        inchi2 = InChIParser.removeIsotopicLayers(inchi2)
+
+        mol1 = InChI.mol_from_inchi(inchi1)
+        mol2 = InChI.mol_from_inchi(inchi2)
+
+        if mol1 is None or mol2 is None:
+            return False
+
+        # STEP 2: remove salts
+        mol1 = InChI.main_fragment(mol1)
+        mol2 = InChI.main_fragment(mol2)
+
+        # STEP 3: neutralize charges
+        mol1 = InChI.neutralize_molecule(mol1)
+        mol2 = InChI.neutralize_molecule(mol2)
+
+        mol1_no_stereo = InChI.remove_cis_trans(mol1)
+        mol2_no_stereo = InChI.remove_cis_trans(mol2)
+        return mol1_no_stereo == mol2_no_stereo
  
     # STEP 1 remove cis/trans stereochemistry
     @staticmethod
