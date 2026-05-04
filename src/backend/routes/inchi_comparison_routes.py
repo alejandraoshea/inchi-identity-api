@@ -98,15 +98,24 @@ def compare_files_mgf_api():
     try:
         data = request.get_json()
 
-        list1 = data.get("list1", [])
-        list2 = data.get("list2", [])
+        list1 = data.get("list1")
+        list2 = data.get("list2")
+        level = data.get("level", "COMPLETE_IDENTITY")
+        merge_msms = data.get("merge_msms", False)
 
         if not list1 or not list2:
             return jsonify({"message": "Both lists required"}), 400
 
         config = load_config()
 
-        result = compare_mgf_files(list1, list2, config)
+        result = compare_mgf_files(
+            list1,
+            list2,
+            config,
+            level=level,
+            merge_msms=merge_msms
+        )
+
         return jsonify(result)
 
     except Exception as e:
