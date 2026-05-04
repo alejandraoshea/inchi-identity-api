@@ -13,7 +13,9 @@ dependencies = [
     "flask-cors",
     "python-dotenv",
     "pillow",
-    "py3Dmol"
+    "py3Dmol",
+    "playwright",
+    "selenium"
 ]
 
 authors = [
