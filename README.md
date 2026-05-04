@@ -53,12 +53,18 @@ conda env create -f conda_env.yml
 conda activate id-levels
 ```
 
-### 3. Install project (CLI)
+### 3. Install Chromium
+
+```bash
+playwright install chromium
+```
+
+### 4. Install project (CLI)
 ```bash
 pip install .
 ```
 
-### 4. Verify CLI
+### 5. Verify CLI
 ```bash
 inchi --help
 ```
