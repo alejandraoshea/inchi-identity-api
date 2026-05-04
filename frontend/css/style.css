@@ -271,7 +271,7 @@ button.secondary:hover {
     flex-direction: column;
     gap: 12px;
     height: 100%;
-    overflow-y: auto;
+    overflow: hidden; /* was auto → change this */
 }
 
 .molecule-card {
@@ -286,7 +286,8 @@ button.secondary:hover {
 }
 
 .center .molecule-card {
-    height: 50%;
+    flex: 1;
+    min-height: 0;
 }
 
 .molecule-header {
@@ -306,7 +307,6 @@ button.secondary:hover {
 }
 
 .molecule {
-    height: 260px;
     flex-shrink: 0;
     display: flex;
     position: relative;
@@ -317,7 +317,12 @@ button.secondary:hover {
     padding: 8px;
     width: 100%;
     cursor: pointer;
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-height: 100%;
 }
+
 
 .molecule img {
     width: 100%;
@@ -596,7 +601,9 @@ button.secondary:hover {
 .mol-cell {
     flex: 1;
     min-width: 0;
-    height: 260px;
+    min-height: 0;
+    height: auto;
+    max-height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;

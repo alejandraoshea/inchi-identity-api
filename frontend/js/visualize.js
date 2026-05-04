@@ -10,10 +10,10 @@ var modalViewer     = null;
 var modalBuilt      = false;
 
 function visualizeFromInchi(containerId, inchi) {
-    var el = document.getElementById(containerId);
-    if (!el || !inchi) 
+    var element = document.getElementById(containerId);
+    if (!element || !inchi) 
         return;
-    renderCard(el, inchi);
+    renderCard(element, inchi);
 }
 
 function draw(inchi1, inchi2, id1, id2) {
@@ -28,8 +28,8 @@ function drawPair(leftEl, rightEl, inchi1, inchi2) {
         renderCard(rightEl, inchi2);
 }
 
-function renderCard(el, inchi) {
-    el.innerHTML = "<div class='mol-loading'></div>";
+function renderCard(element, inchi) {
+    element.innerHTML = "<div class='mol-loading'></div>";
 
     fetch("http://127.0.0.1:5000/api/render_3d_image", {
         method: "POST",
@@ -49,7 +49,7 @@ function renderCard(el, inchi) {
         if (data.sdf) 
             sdfCache[inchi] = data.sdf;
 
-        el.innerHTML = "";
+        element.innerHTML = "";
         var img = document.createElement("img");
         img.src   = "data:image/png;base64," + data.image;
         img.style.cssText = "width:100%;height:100%;object-fit:contain;display:block;cursor:pointer;";
@@ -59,8 +59,8 @@ function renderCard(el, inchi) {
         hint.className = "mol-hint";
         hint.textContent = "click for 3D \u2197";
 
-        el.appendChild(img);
-        el.appendChild(hint);
+        element.appendChild(img);
+        element.appendChild(hint);
 
         img.addEventListener("click", function(e) {
             e.stopPropagation();
@@ -69,31 +69,31 @@ function renderCard(el, inchi) {
     })
     .catch(function(err) {
         console.info("PNG failed, 2D fallback:", err.message);
-        render2D(el, inchi);
+        render2D(element, inchi);
     });
 }
 
-function render2D(el, inchi) {
+function render2D(element, inchi) {
     fetchSDF(inchi).then(function(sdf) {
-        if (!sdf) { el.innerHTML = "<div class='mol-error'>Could not render</div>"; return; }
+        if (!sdf) { element.innerHTML = "<div class='mol-error'>Could not render</div>"; return; }
         rdkitReady.then(function() {
             try {
                 var mol = RDKit.get_mol(sdf);
                 if (!mol || !mol.is_valid()) throw new Error();
                 var svg = mol.get_svg();
                 mol.delete();
-                el.innerHTML = svg;
-                var s = el.querySelector("svg");
+                element.innerHTML = svg;
+                var s = element.querySelector("svg");
                 if (s) {
                     s.removeAttribute("width");
                     s.removeAttribute("height");
                     s.style.cssText = "width:100%;height:100%;cursor:pointer;display:block;";
                 }
-                el.style.cursor = "pointer";
-                el.title = "Click for interactive 3D";
-                el.addEventListener("click", function(e) { e.stopPropagation(); openModal(inchi); });
+                element.style.cursor = "pointer";
+                element.title = "Click for interactive 3D";
+                element.addEventListener("click", function(e) { e.stopPropagation(); openModal(inchi); });
             } catch(e) {
-                el.innerHTML = "<div class='mol-error'>Could not render</div>";
+                element.innerHTML = "<div class='mol-error'>Could not render</div>";
             }
         });
     });
