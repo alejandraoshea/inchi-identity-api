@@ -13,9 +13,12 @@ var layerLabels = {
 
 function compare(isAdvanced) {
     isAdvanced = !!isAdvanced;
-    var inchi1 = _val(isAdvanced ? "inchi1_adv" : "inchi1");
-    var inchi2 = _val(isAdvanced ? "inchi2_adv" : "inchi2");
-    if (!inchi1 || !inchi2) { showToast("Please enter both InChIs", "error"); return; }
+    var inchi1 = val(isAdvanced ? "inchi1_adv" : "inchi1");
+    var inchi2 = val(isAdvanced ? "inchi2_adv" : "inchi2");
+    if (!inchi1 || !inchi2) { 
+        showToast("Please enter both InChIs", "error"); 
+        return; 
+    }
 
     updateLayers({}, isAdvanced);
     setLoadingState(true);
@@ -23,19 +26,35 @@ function compare(isAdvanced) {
     var url  = isAdvanced ? API + "/compare_inchis_custom" : API + "/compare_inchis";
     var body = { inchi1: inchi1, inchi2: inchi2 };
     if (isAdvanced) {
-        body.levels = Array.from(document.querySelectorAll(".level-checkbox:checked")).map(function(cb) { return cb.value; });
+        body.levels = Array.from(document.querySelectorAll(".level-checkbox:checked")).map(function(cb) { 
+            return cb.value; 
+        });
     }
 
-    fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+    fetch(url, { 
+        method: "POST", 
+        headers: { 
+            "Content-Type": "application/json" 
+        }, 
+        body: JSON.stringify(body) 
+    })
     .then(function(res) {
-        return res.json().then(function(data) { if (!res.ok) throw new Error(data.message || "Error"); return data; });
+        return res.json().then(function(data) { 
+            if (!res.ok) 
+                throw new Error(data.message || "Error"); 
+            return data; 
+        });
     })
     .then(function(data) {
         draw(inchi1, inchi2);
         updateLayers(mapResults(data.results), isAdvanced);
     })
-    .catch(function(err) { showToast(err.message || "Server error", "error"); })
-    .finally(function() { setLoadingState(false); });
+    .catch(function(err) { 
+        showToast(err.message || "Server error", "error"); 
+    })
+    .finally(function() { 
+        setLoadingState(false); 
+    });
 }
 
 function updateLayers(results, isAdvanced) {
@@ -80,4 +99,7 @@ function mapResults(raw) {
     };
 }
 
-function _val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+function val(id) { 
+    var el = document.getElementById(id); 
+    return el ? el.value.trim() : ""; 
+}

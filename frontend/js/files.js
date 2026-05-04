@@ -9,7 +9,11 @@ document.addEventListener("DOMContentLoaded", function() {
         readFile(file, function(lines) {
             file1Data = lines;
             var lbl = f1.closest("label");
-            if (lbl) { lbl.classList.add("has-file"); var n = lbl.querySelector(".file-btn-name"); if (n) n.textContent = file.name; }
+            if (lbl) { 
+                lbl.classList.add("has-file"); 
+                var n = lbl.querySelector(".file-btn-name"); 
+                if (n) n.textContent = file.name; 
+            }
             showToast("Loaded " + lines.length + " entries from File A", "success");
         });
     });
@@ -20,25 +24,46 @@ document.addEventListener("DOMContentLoaded", function() {
         readFile(file, function(lines) {
             file2Data = lines;
             var lbl = f2.closest("label");
-            if (lbl) { lbl.classList.add("has-file"); var n = lbl.querySelector(".file-btn-name"); if (n) n.textContent = file.name; }
+            if (lbl) { 
+                lbl.classList.add("has-file"); 
+                var n = lbl.querySelector(".file-btn-name"); 
+                if (n) n.textContent = file.name; 
+            }
             showToast("Loaded " + lines.length + " entries from File B", "success");
         });
     });
 
     var btn = document.getElementById("compare-files-btn");
     if (btn) btn.addEventListener("click", function() {
-        if (!file1Data.length || !file2Data.length) { showToast("Please upload both files first", "error"); return; }
+        if (!file1Data.length || !file2Data.length) { 
+            showToast("Please upload both files first", "error"); 
+            return; 
+        }
         var mode = (document.getElementById("mode-select") || {}).value || "pairwise";
         btn.disabled = true; btn.textContent = "Comparing...";
         fetch("http://127.0.0.1:5000/api/compare_files", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ list1: file1Data, list2: file2Data, mode: mode })
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ 
+                list1: file1Data, list2: file2Data, mode: mode 
+            })
         })
-        .then(function(r) { if (!r.ok) return r.json().then(function(e) { throw new Error(e.message || "Error"); }); return r.json(); })
-        .then(function(data) { mode === "pairwise" ? renderPairwise(data.comparisons) : renderCross(data.comparisons); })
-        .catch(function(err) { showToast(err.message || "Network error", "error"); })
-        .finally(function() { btn.disabled = false; btn.textContent = "Compare Files"; });
+        .then(function(r) { 
+            if (!r.ok) return r.json().then(function(e) { 
+                throw new Error(e.message || "Error"); }); 
+                return r.json(); 
+            })
+        .then(function(data) { 
+            mode === "pairwise" ? renderPairwise(data.comparisons) : renderCross(data.comparisons); 
+        })
+        .catch(function(err) { 
+            showToast(err.message || "Network error", "error"); 
+        })
+        .finally(function() { 
+            btn.disabled = false; btn.textContent = "Compare Files"; 
+        });
     });
 });
 
@@ -46,7 +71,7 @@ function renderPairwise(comparisons) {
     var container = document.getElementById("file-results-container");
     container.innerHTML = "";
     comparisons.forEach(function(comp, i) {
-        var card = _buildCard(comp, i, "pairwise", mapResults(comp.results || comp.matches || {}));
+        var card = buildCard(comp, i, "pairwise", mapResults(comp.results || comp.matches || {}));
         container.appendChild(card);
         requestAnimationFrame(function() {
             drawPair(
@@ -61,7 +86,7 @@ function renderPairwise(comparisons) {
 function renderCross(comparisons) {
     var container = document.getElementById("file-results-container");
     container.innerHTML = "";
-    var grouped = _group(comparisons);
+    var grouped = group(comparisons);
     Object.keys(grouped).forEach(function(inchi1, gi) {
         var matches = grouped[inchi1];
         var item    = document.createElement("div"); item.className = "file-item";
@@ -89,13 +114,13 @@ function renderCross(comparisons) {
             }
         });
         matches.forEach(function(comp, mi) {
-            content.appendChild(_buildCard(comp, gi + "-" + mi, "cross", mapResults(comp.results || comp.matches || {})));
+            content.appendChild(buildCard(comp, gi + "-" + mi, "cross", mapResults(comp.results || comp.matches || {})));
         });
         item.appendChild(header); item.appendChild(content); container.appendChild(item);
     });
 }
 
-function _buildCard(comp, idx, mode, mapped) {
+function buildCard(comp, idx, mode, mapped) {
     var card = document.createElement("div"); card.className = "comparison-card";
     card.innerHTML =
         "<div class='mol-card-headers'>" +
@@ -125,12 +150,18 @@ function _buildCard(comp, idx, mode, mapped) {
     return card;
 }
 
-function _group(comparisons) {
-    return comparisons.reduce(function(acc, c) { (acc[c.inchi_1] = acc[c.inchi_1] || []).push(c); return acc; }, {});
+function group(comparisons) {
+    return comparisons.reduce(function(acc, c) { (acc[c.inchi_1] = acc[c.inchi_1] || []).push(c); 
+        return acc; 
+    }, 
+    {});
 }
 
 function readFile(file, cb) {
     var r = new FileReader();
-    r.onload = function(e) { cb(e.target.result.split("\n").map(function(l) { return l.trim(); }).filter(Boolean)); };
+    r.onload = function(e) { cb(e.target.result.split("\n").map(function(l) { 
+        return l.trim(); 
+    }).filter(Boolean)); 
+    };
     r.readAsText(file);
 }
