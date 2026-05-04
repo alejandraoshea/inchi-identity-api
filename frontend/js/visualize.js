@@ -11,7 +11,8 @@ var modalBuilt      = false;
 
 function visualizeFromInchi(containerId, inchi) {
     var el = document.getElementById(containerId);
-    if (!el || !inchi) return;
+    if (!el || !inchi) 
+        return;
     renderCard(el, inchi);
 }
 
@@ -21,8 +22,10 @@ function draw(inchi1, inchi2, id1, id2) {
 }
 
 function drawPair(leftEl, rightEl, inchi1, inchi2) {
-    if (leftEl  && inchi1) renderCard(leftEl,  inchi1);
-    if (rightEl && inchi2) renderCard(rightEl, inchi2);
+    if (leftEl  && inchi1) 
+        renderCard(leftEl,  inchi1);
+    if (rightEl && inchi2) 
+        renderCard(rightEl, inchi2);
 }
 
 function renderCard(el, inchi) {
@@ -30,13 +33,21 @@ function renderCard(el, inchi) {
 
     fetch("http://127.0.0.1:5000/api/render_3d_image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inchi: inchi })
+        headers: { 
+            "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({ 
+            inchi: inchi 
+        })
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) { 
+        return r.json(); 
+    })
     .then(function(data) {
-        if (data.error) throw new Error(data.error);
-        if (data.sdf) sdfCache[inchi] = data.sdf;
+        if (data.error) 
+            throw new Error(data.error);
+        if (data.sdf) 
+            sdfCache[inchi] = data.sdf;
 
         el.innerHTML = "";
         var img = document.createElement("img");
@@ -98,19 +109,25 @@ function buildModal() {
 
     var box = document.createElement("div");
     box.className = "mol-modal";
+    box.style.padding = "16px";
+
+    var headerRow = document.createElement("div");
+    headerRow.className = "mol-modal-header";
+
+    var inchiLabel = document.createElement("div");
+    inchiLabel.className = "mol-modal-header-text";
 
     var closeBtn = document.createElement("button");
     closeBtn.className = "mol-modal-close";
     closeBtn.innerHTML = "&#x2715;";
 
-    var inchiLabel = document.createElement("div");
-    inchiLabel.className = "mol-modal-header";
+    headerRow.appendChild(inchiLabel);
+    headerRow.appendChild(closeBtn);
 
     var canvasWrap = document.createElement("div");
     canvasWrap.className = "mol-modal-body";
 
-    box.appendChild(closeBtn);
-    box.appendChild(inchiLabel);
+    box.appendChild(headerRow);
     box.appendChild(canvasWrap);
     backdrop.appendChild(box);
     document.body.appendChild(backdrop);
@@ -118,17 +135,19 @@ function buildModal() {
     closeBtn.addEventListener("click", function() { 
         backdrop.style.display = "none"; 
     });
+
     backdrop.addEventListener("click", function(ev) { 
-        if (ev.target === backdrop) backdrop.style.display = "none"; 
-    });
+        if (ev.target === backdrop) 
+            backdrop.style.display = "none"; 
+        });
     document.addEventListener("keydown", function(ev) {
-        if (ev.key === "Escape" && backdrop.style.display !== "none") 
-            backdrop.style.display = "none";
+        if (ev.key === "Escape" && backdrop.style.display !== "none") backdrop.style.display = "none";
     });
 
     modalBackdrop   = backdrop;
     modalInchiLabel = inchiLabel;
     modalCanvas     = canvasWrap;
+
     modalViewer = $3Dmol.createViewer(canvasWrap, { backgroundColor: "white" });
 }
 
@@ -148,7 +167,9 @@ function openModal(inchi) {
         modalViewer.addModel(sdf, "sdf");
         modalViewer.setStyle({}, { 
             stick: {}, 
-            sphere: { scale: 0.3 } 
+            sphere: { 
+                scale: 0.3 
+            } 
         });
         modalViewer.zoomTo();
         modalViewer.render();
@@ -166,7 +187,9 @@ function openModal(inchi) {
     }
 
     fetchSDF(inchi).then(function(sdf) {
-        if (!sdf) { return; }
+        if (!sdf) { 
+            return; 
+        }
         loadInto(sdf);
     });
 }
