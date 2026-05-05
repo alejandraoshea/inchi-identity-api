@@ -87,7 +87,7 @@ class LipidHeadValidator:
         #phosphatidylcholines (PC)
         "phosphatidylcholine": HeadgroupPattern(
             name="Phosphatidylcholine (PC)",
-            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1H1-])[OX2][CH2X4][CH2X4][NX4+]([CH3X4])([CH3X4])[CH3X4])[OX2][CX3](=[OX1])[#6]",
+            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1-,OX1H1])[OX2][CH2X4][CH2X4][NX4+]([CH3X4])([CH3X4])[CH3X4])[OX2][CX3](=[OX1])[#6]",
             lipid_class="Phosphatidylcholines",
             fa_positions=["sn-1", "sn-2"],
             description="PC headgroup with FAs at sn-1 and sn-2"
@@ -96,7 +96,7 @@ class LipidHeadValidator:
         #phosphatidylethanolamines (PE)
         "phosphatidylethanolamine": HeadgroupPattern(
             name="Phosphatidylethanolamine (PE)",
-            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1H1-])[OX2][CH2X4][CH2X4][NX3H2,NX4H3+])[OX2][CX3](=[OX1])[#6]",
+            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1-,OX1H1])[OX2][CH2X4][CH2X4][NX3H2,NX4H3+])[OX2][CX3](=[OX1])[#6]",
             lipid_class="Phosphatidylethanolamines",
             fa_positions=["sn-1", "sn-2"],
             description="PE headgroup with FAs at sn-1 and sn-2"
@@ -105,7 +105,7 @@ class LipidHeadValidator:
         #phosphatidylserines (PS)
         "phosphatidylserine": HeadgroupPattern(
             name="Phosphatidylserine (PS)",
-            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1H1-])[OX2][CH2X4][CHX4]([NX3H2,NX4H3+])[CX3](=[OX1])[OX2H0,OX1H1-])[OX2][CX3](=[OX1])[#6]",
+            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1-,OX1H1])[OX2][CH2X4][CHX4]([NX3H2,NX4H3+])[CX3](=[OX1])[OX2H0,OX1-,OX1H1])[OX2][CX3](=[OX1])[#6]",
             lipid_class="Phosphatidylserines",
             fa_positions=["sn-1", "sn-2"],
             description="PS headgroup with FAs at sn-1 and sn-2"
@@ -114,7 +114,7 @@ class LipidHeadValidator:
         #phosphatidylglycerols (PG)
         "phosphatidylglycerol": HeadgroupPattern(
             name="Phosphatidylglycerol (PG)",
-            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1H1-])[OX2][CH2X4][CHX4]([OX2H1])[CH2X4][OX2H1])[OX2][CX3](=[OX1])[#6]",
+            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1-,OX1H1])[OX2][CH2X4][CHX4]([OX2H1])[CH2X4][OX2H1])[OX2][CX3](=[OX1])[#6]",
             lipid_class="Phosphatidylglycerols",
             fa_positions=["sn-1", "sn-2"],
             description="PG headgroup with FAs at sn-1 and sn-2"
@@ -123,7 +123,7 @@ class LipidHeadValidator:
         #cardiolipins (CL)
         "cardiolipin": HeadgroupPattern(
             name="Cardiolipin (CL)",
-            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1H1-])[OX2][CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1H1-])[OX2][CH2X4][CHX4][CH2X4])[OX2])[OX2][CX3](=[OX1])[#6]",
+            smarts="[CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1-,OX1H1])[OX2][CH2X4][CHX4]([CH2X4][OX2][PX4](=[OX1])([OX2H0,OX1-,OX1H1])[OX2][CH2X4][CHX4][CH2X4])[OX2])[OX2][CX3](=[OX1])[#6]",
             lipid_class="Cardiolipins",
             fa_positions=["sn-1", "sn-2", "sn-1'", "sn-2'"],
             description="CL with 4 FA chains"
@@ -132,24 +132,25 @@ class LipidHeadValidator:
         #cermides (Cer) - Sphingolipids
         "ceramide": HeadgroupPattern(
             name="Ceramide",
-            smarts="[C@H](NC(=O)[#6])[C@H](O)[#6]",
+            smarts="[NX3H1][CX3](=[OX1])[CX4][CX4][CX4][CX4][CX4][CX4][CX4][CX4]",
             lipid_class="Ceramides",
             fa_positions=["N-acyl"],
             description="Sphingoid base with N-acyl FA"
         ),
         
-        #sphingomyelins (SM)
+        # sphingomyelin — was matching GlcNAc acetamide
         "sphingomyelin": HeadgroupPattern(
             name="Sphingomyelin (SM)",
-            smarts="[C@H](NC(=O)[#6])[C@H](O)[#6]",  # FIXED: Requires N-C bond!
+            smarts="[NX3H1][CX3](=[OX1])[CX4][CX4][CX4][CX4][CX4][CX4][CX4][CX4]",
             lipid_class="Sphingomyelins",
             fa_positions=["N-acyl"],
-            description="SM - detects N-acyl FA on sphingoid base"
+            description="SM - N-acyl FA on sphingoid base (8+ carbons required)"
         ),
 
+        # ceramide_phosphoinositol — compound pattern, fix the ceramide half
         "ceramide_phosphoinositol": HeadgroupPattern(
             name="Ceramide phosphoinositol",
-            smarts="[C@H](NC(=O)[#6])[C@H](O)[#6].[PX4](=[OX1])[OX2][CH]1[CH]([OX2H1])[CH]([OX2H1])[CH]([OX2H1])[CH]([OX2H1])[CH]1[OX2H1]",
+            smarts="[NX3H1][CX3](=[OX1])[CX4][CX4][CX4][CX4][CX4][CX4][CX4][CX4].[PX4](=[OX1])[OX2][CH]1[CH]([OX2H1])[CH]([OX2H1])[CH]([OX2H1])[CH]([OX2H1])[CH]1[OX2H1]",
             lipid_class="Phosphosphingolipids",
             fa_positions=["N-acyl"],
             description="Ceramide with inositol phosphate"
@@ -177,12 +178,13 @@ class LipidHeadValidator:
             fa_positions=[]
         ),
 
+        # ganglioside_core — fix the ceramide half of the compound pattern
         "ganglioside_core": HeadgroupPattern(
             name="Ganglioside core",
-            smarts="[C@H](NC(=O)[#6])[C@H](O)[#6].[CH]1O[CH](CO)[CH](O)[CH](O)[CH]1O",
+            smarts="[NX3H1][CX3](=[OX1])[CX4][CX4][CX4][CX4][CX4][CX4][CX4][CX4].[CH]1O[CH](CO)[CH](O)[CH](O)[CH]1O",
             lipid_class="Gangliosides",
             fa_positions=["N-acyl"],
-            description="Ganglioside - requires ceramide base with sugar"
+            description="Ganglioside - ceramide base with sugar (8+ carbon FA required)"
         ),
         
         "glycosphingolipid_galactose": HeadgroupPattern(
@@ -201,12 +203,13 @@ class LipidHeadValidator:
             description="Neutral glycosphingolipid with glucose"
         ),
         
+        # acidic_glycosphingolipid_glucuronic — same fix
         "acidic_glycosphingolipid_glucuronic": HeadgroupPattern(
             name="Acidic Glycosphingolipid with Glucuronic acid",
-            smarts="[C@H](NC(=O)[#6])[C@H](O)[#6]",
+            smarts="[NX3H1][CX3](=[OX1])[CX4][CX4][CX4][CX4][CX4][CX4][CX4][CX4]",
             lipid_class="Acidic glycosphingolipids",
             fa_positions=["N-acyl"],
-            description="Acidic glycosphingolipid - REQUIRES N-acyl FA (Example 60 from Excel)"
+            description="Acidic glycosphingolipid - requires N-acyl FA with 8+ carbons"
         ),
         
         "sphingomyelin_detailed": HeadgroupPattern(

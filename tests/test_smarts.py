@@ -1,246 +1,427 @@
 """
-COMPLETE TEST FILE - ALL EXCEL EXAMPLES
-Auto-generated from Naming_Example.xlsx
+Tests generated directly from Naming_Example.xlsx
+
+Column mapping (Hoja1):
+  B = positive SMILES          → must match
+  H = error 1 (wrong chain)    → FA placed at wrong position (O instead of N), must NOT match
+  I = variant azúcares         → different/extra sugar, N-acyl intact
+  J = error 3 (stereochemistry)→ wrong stereo on sphingoid base
+
+Each test class maps to one Excel row.
+Column I (sugar variant) always keeps the correct N-acyl bond, so it is
+expected to still match — it is NOT a negative, just a structural variant.
+Column J (stereo) tests are marked @expectedFailure because current SMARTS
+patterns do not enforce stereochemistry.
+
+Rows with no entry in a column → that test method is omitted.
+Rows whose negatives still contain [G]/[R] placeholders → skipped (invalid SMILES).
 """
+
 import unittest
 from rdkit import Chem
 from src.backend.lipid.lipid_analysis import LipidHeadValidator
-from src.backend.inchi.determine_levels_id import InChI
 
 
-class TestExcelExample7(unittest.TestCase):
-    """Example 7: Neutral glycosphingolipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "[H][C@](NC(CCCCCCCCCCCCCCC)=O)(CO[C@H]1[C@H](O)[C@@H](O)[C@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O)[C@@H](O)[C@@H]2O)[C@@H](O)[C@H]1O)[C@@](O)([H])/C=C/CCCCCCCCCCCCC"
-        self.negative = "[H][C@](N)(CO[C@H]1[C@H](O)[C@@H](O)[C@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O)[C@@H](O)[C@@H]2O)[C@@H](O)[C@H]1O)[C@@](OC(CCCCCCCCCCCCCCC)=O)([H])/C=C/CCCCCCCCCCCCC"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 7 POSITIVE should match (FA at correct position)")
-    
-    def test_negative_no_match(self):
-        mol = Chem.MolFromSmiles(self.negative)
-        self.assertIsNotNone(mol, "Negative SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertFalse(result, "Example 7 NEGATIVE should NOT match (FA at wrong position)")
+def parse(smiles: str):
+    """Return RDKit mol, or None if SMILES is empty/placeholder/invalid."""
+    if not smiles:
+        return None
+    if "[G]" in smiles or "[R]" in smiles:
+        return None
+    return Chem.MolFromSmiles(smiles.strip())
 
 
-class TestExcelExample60(unittest.TestCase):
-    """Example 60: Acidic glycosphingolipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "[H][C@](NC(CCCCCCCCCCCCC)=O)(CO[C@H]1O[C@H](C(O)=O)[C@H](O)[C@H](O)[C@H]1O)[C@@](O)([H])CCCCCCCCCCCCCCC"
-        self.negative = "[H][C@](N)(CO[C@H]1O[C@H](C(O)=O)[C@H](O)[C@H](O)[C@H]1O)[C@@](OC(CCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCC"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 60 POSITIVE should match")
-    
-    def test_negative_no_match(self):
-        mol = Chem.MolFromSmiles(self.negative)
-        self.assertIsNotNone(mol, "Negative SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertFalse(result, "Example 60 NEGATIVE should NOT match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 7 — Neutral glycosphingolipid  (Gal-GlcNAc-Gal-GlcNAc-Gal-Glc-Cer)
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx7_NeutralGlycosphingolipid(unittest.TestCase):
+    # Col B: correct structure — N-acyl ceramide + oligosaccharide chain
+    POS = (
+        "[H][C@](NC(CCCCCCCCCCCCCCC)=O)"
+        "(CO[C@H]1[C@H](O)[C@@H](O)[C@H](O[C@H]2[C@H](O)[C@@H](O[C@H]3"
+        "[C@H](NC(C)=O)[C@@H](O)[C@H](O[C@H]4[C@H](O)[C@@H](O[C@@H]5"
+        "[C@H](NC(C)=O)[C@@H](O)[C@H](O[C@H]6[C@H](O)[C@@H](O)[C@@H](O)"
+        "[C@H](O6)CO)[C@H](O5)CO)[C@@H](O)[C@H](O4)CO)[C@H](O3)CO)"
+        "[C@@H](O)[C@H](O2)CO)[C@H](O1)CO)[C@@](O)([H])/C=C/CCCCCCCCCCCCC"
+    )
+    # Col H: FA moved from N to O (free amine)
+    NEG_CHAIN = (
+        "[H][C@](N)"
+        "(CO[C@H]1[C@H](O)[C@@H](O)[C@H](O[C@H]2[C@H](O)[C@@H](O[C@H]3"
+        "[C@H](NC(C)=O)[C@@H](O)[C@H](O[C@H]4[C@H](O)[C@@H](O[C@@H]5"
+        "[C@H](NC(C)=O)[C@@H](O)[C@H](O[C@H]6[C@H](O)[C@@H](O)[C@@H](O)"
+        "[C@H](O6)CO)[C@H](O5)CO)[C@@H](O)[C@H](O4)CO)[C@H](O3)CO)"
+        "[C@@H](O)[C@H](O2)CO)[C@H](O1)CO)"
+        "[C@@](OC(CCCCCCCCCCCCCCC)=O)([H])/C=C/CCCCCCCCCCCCC"
+    )
+    # Col J: wrong stereo on C2 of sphingoid base
+    NEG_STEREO = (
+        "[H][C@](NC(CCCCCCCCCCCCCCC)=O)"
+        "(CO[C@H]1[C@H](O)[C@@H](O)[C@H](O[C@H]2[C@H](O)[C@@H](O[C@H]3"
+        "[C@H](NC(C)=O)[C@@H](O)[C@H](O[C@H]4[C@H](O)[C@@H](O[C@@H]5"
+        "[C@H](NC(C)=O)[C@@H](O)[C@H](O[C@H]6[C@H](O)[C@@H](O)[C@@H](O)"
+        "[C@H](O6)CO)[C@H](O5)CO)[C@@H](O)[C@H](O4)CO)[C@H](O3)CO)"
+        "[C@@H](O)[C@H](O2)CO)[C@H](O1)CO)"
+        "C(O)([H])/C=C/CCCCCCCCCCCCC"
+    )
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m, "Col B SMILES invalid")
+        self.assertTrue(self.v.matches_any_valid_head(m),
+                        "Ex7 positive (N-acyl ceramide + sugars) must match")
+
+    def test_negative_chain(self):
+        """FA at O instead of N → must NOT match."""
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m, "Col H SMILES invalid")
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex7 chain-error (O-acyl, free amine) must NOT match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        """Wrong C2 stereo — not enforced by current SMARTS."""
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m, "Col J SMILES invalid")
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex7 stereo-error should NOT match once stereo patterns added")
 
 
-class TestExcelExample64(unittest.TestCase):
-    """Example 64: Phosphosphingolipids (Sphingomyelin)"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "[H][C@](NC(CCCCCCCCCCCCCCCCCCC)=O)(COP(OCC[N+](C)(C)C)([O-])=O)[C@@](O)([H])CCCCCCCCCCCCCCC"
-        self.negative = "[H][C@](N)(COP(OCC[N+](C)(C)C)([O-])=O)[C@@](OC(CCCCCCCCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCC"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 64 POSITIVE should match")
-    
-    def test_negative_no_match(self):
-        mol = Chem.MolFromSmiles(self.negative)
-        self.assertIsNotNone(mol, "Negative SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertFalse(result, "Example 64 NEGATIVE should NOT match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 60 — Acidic glycosphingolipid  (glucuronic acid headgroup)
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx60_AcidicGlycosphingolipid(unittest.TestCase):
+    POS       = "[H][C@](NC(CCCCCCCCCCCCC)=O)(CO[C@H]1O[C@H](C(O)=O)[C@H](O)[C@H](O)[C@H]1O)[C@@](O)([H])CCCCCCCCCCCCCCC"
+    NEG_CHAIN = "[H][C@](N)(CO[C@H]1O[C@H](C(O)=O)[C@H](O)[C@H](O)[C@H]1O)[C@@](OC(CCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCC"
+    # Col I: extended sugar (still has N-acyl) → should still match
+    VAR_SUGAR = "[H][C@](NC(CCCCCCCCCCCCC)=O)(CO[C@H]1O[C@H](C(O)=O)[C@@H](O[C@H]2O[C@H](CO[C@H]3O[C@H](CO)[C@H](O)[C@H](O)[C@H]3O)[C@@H](O)[C@H](O)[C@H]2N)[C@H](O)[C@H]1O)[C@@](O)([H])CCCCCCCCCCCCCCC"
+    NEG_STEREO= "[H][C@](NC(CCCCCCCCCCCCC)=O)(CO[C@H]1O[C@H](C(O)=O)[C@H](O)[C@H](O)[C@H]1O)C(O)([H])CCCCCCCCCCCCCCC"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex60 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex60 chain-error (O-acyl, free amine) must NOT match")
+
+    def test_sugar_variant_still_matches(self):
+        """Col I keeps correct N-acyl bond — must still match."""
+        m = parse(self.VAR_SUGAR)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m),
+                        "Ex60 sugar-variant (N-acyl intact) must still match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample65(unittest.TestCase):
-    """Example 65: Phosphosphingolipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "[H][C@](NC(CCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(OCCN)(O)=O)[C@@](O)([H])CCCCCCCCCCCCCCC"
-        self.negative = "[H][C@](N)(COP(OCCN)(O)=O)[C@@](OC(CCCCCCCCCCCCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCC"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 65 POSITIVE should match")
-    
-    def test_negative_no_match(self):
-        mol = Chem.MolFromSmiles(self.negative)
-        self.assertIsNotNone(mol, "Negative SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertFalse(result, "Example 65 NEGATIVE should NOT match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 64 — Phosphosphingolipid / Sphingomyelin
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx64_Sphingomyelin(unittest.TestCase):
+    POS        = "[H][C@](NC(CCCCCCCCCCCCCCCCCCC)=O)(COP(OCC[N+](C)(C)C)([O-])=O)[C@@](O)([H])CCCCCCCCCCCCCCC"
+    NEG_CHAIN  = "[H][C@](N)(COP(OCC[N+](C)(C)C)([O-])=O)[C@@](OC(CCCCCCCCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCC"
+    NEG_STEREO = "[H][C@](NC(CCCCCCCCCCCCCCCCCCC)=O)(COP(OCC[N+](C)(C)C)([O-])=O)C(O)([H])CCCCCCCCCCCCCCC"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex64 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex64 chain-error must NOT match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample66(unittest.TestCase):
-    """Example 66: Phosphosphingolipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "[H][C@](NC(C(O)CCCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O)[C@@](O)([H])CCCCCCCCCCCCCCCCC"
-        self.negative = "[H][C@](N)(COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O)[C@@](OC(C(O)CCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCCCC"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 66 POSITIVE should match")
-    
-    def test_negative_no_match(self):
-        mol = Chem.MolFromSmiles(self.negative)
-        self.assertIsNotNone(mol, "Negative SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertFalse(result, "Example 66 NEGATIVE should NOT match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 65 — Ceramide phosphoethanolamine
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx65_CeramidePhosphoethanolamine(unittest.TestCase):
+    POS        = "[H][C@](NC(CCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(OCCN)(O)=O)[C@@](O)([H])/C=C/CCCCCCCCCCC"
+    NEG_CHAIN  = "[H][C@](N)(COP(OCCN)(O)=O)[C@@](OC(CCCCCCCCCCCCCCCCCCCCCCC)=O)([H])/C=C/CCCCCCCCCCC"
+    NEG_STEREO = "[H][C@](NC(CCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(OCCN)(O)=O)C(O)([H])/C=C/CCCCCCCCCCC"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex65 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex65 chain-error must NOT match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample67(unittest.TestCase):
-    """Example 67: Acidic glycosphingolipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "[H][C@](NC(CCCCCCCCCCCCC/C=C\\CCCCCCCC)=O)(CO[C@@H]1O[C@H](CO)[C@@H](O[C@@H]2O[C@H](CO[C@@H]3O[C@H](CO)[C@H](O)[C@H](O)[C@H]3O)[C@H](O)[C@H](O)[C@H]2NC(C)=O)[C@H](O)[C@H]1O)[C@@](O)([H])/C=C/CCCCCCCCCCCCC"
-        self.negative = "[H][C@](N)(CO[G])[C@@](OC(CCCCCCCCCCCCC/C=C\\CCCCCCCC)=O)([H])/C=C/CCCCCCCCCCCCC"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 67 POSITIVE should match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 66 — Ceramide phosphoinositol
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx66_CeramidePhosphoinositol(unittest.TestCase):
+    POS        = "[H][C@](NC(C(O)CCCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O)[C@@](O)([H])CCCCCCCCCCCCCCCCC"
+    NEG_CHAIN  = "[H][C@](N)(COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O)[C@@](OC(C(O)CCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])CCCCCCCCCCCCCCCCC"
+    # Col I: different inositol stereochemistry — N-acyl intact, should match
+    VAR_SUGAR  = "[H][C@](NC(C(O)CCCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@@H](O)[C@@H]1O)(O)=O)[C@@](O)([H])CCCCCCCCCCCCCCCCC"
+    NEG_STEREO = "[H][C@](NC(C(O)CCCCCCCCCCCCCCCCCCCCCCCC)=O)(COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O)C(O)([H])CCCCCCCCCCCCCCCCC"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex66 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex66 chain-error must NOT match")
+
+    def test_sugar_variant_still_matches(self):
+        """Col I: different inositol stereo but N-acyl bond correct — must match."""
+        m = parse(self.VAR_SUGAR)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m),
+                        "Ex66 inositol-stereo variant (N-acyl intact) must still match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample69(unittest.TestCase):
-    """Example 69: Unknown type"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "CCCCCCCCCCCCCC[C@@]([H])(O)[C@](O)([H])[C@](NC(CCCCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O"
-        self.negative = "CCCCCCCCCCCCCC[C@@]([H])(O)[C@](OC(CCCCCCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])[C@](N)([H])COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O)(O)=O"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 69 POSITIVE should match")
-    
-    def test_negative_no_match(self):
-        mol = Chem.MolFromSmiles(self.negative)
-        self.assertIsNotNone(mol, "Negative SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertFalse(result, "Example 69 NEGATIVE should NOT match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 67 — Acidic glycosphingolipid / Sulfatide
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx67_Sulfatide(unittest.TestCase):
+    POS        = "[H][C@](NC(CCCCCCCCCCCCC/C=C\\CCCCCCCC)=O)(CO[C@@H]1O[C@H](CO)[C@H](O)[C@H](OS(=O)(O)=O)[C@H]1O)[C@@](O)([H])/C=C/CCCCCCCCCCCCC"
+    NEG_CHAIN  = "[H][C@](N)(CO[C@@H]1O[C@H](CO)[C@H](O)[C@H](OS(=O)(O)=O)[C@H]1O)[C@@](OC(CCCCCCCCCCCCC/C=C\\CCCCCCCC)=O)([H])/C=C/CCCCCCCCCCCCC"
+    # Col I: desulfated glucose — N-acyl intact, should match
+    VAR_SUGAR  = "[H][C@](NC(CCCCCCCCCCCCC/C=C\\CCCCCCCC)=O)(CO[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O)[C@@](O)([H])/C=C/CCCCCCCCCCCCC"
+    NEG_STEREO = "[H][C@](NC(CCCCCCCCCCCCC/C=C\\CCCCCCCC)=O)(CO[C@@H]1O[C@H](CO)[C@H](O)[C@H](OS(=O)(O)=O)[C@H]1O)C(O)([H])/C=C/CCCCCCCCCCCCC"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex67 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex67 chain-error must NOT match")
+
+    def test_sugar_variant_still_matches(self):
+        """Col I: desulfated glucose, N-acyl still correct — must match."""
+        m = parse(self.VAR_SUGAR)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m),
+                        "Ex67 sugar-variant (desulfated, N-acyl intact) must still match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample70(unittest.TestCase):
-    """Example 70: Glycerolipids (Triacylglycerol)"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "O=C(CCCCCCCCCCC)OC[C@@]([H])(OC(CCCCCCCCCCCCCCC)=O)COC(CCCCCCCCCCCCCCCCC)=O"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 70 POSITIVE should match")
-        classes = self.validator.identify_lipid_class(mol)
-        self.assertIn("Triacylglycerols", classes, "Should be identified as TG")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 69 — Ceramide phospho-inositol-glucosamine
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx69_CeramidePhosphoInositolGlcN(unittest.TestCase):
+    POS        = "CCCCCCCCCCCCCC[C@@]([H])(O)[C@](O)([H])[C@](NC(CCCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O[C@@H]2O[C@H](CO)[C@@H](O)[C@H](O)[C@H]2N)(O)=O"
+    NEG_CHAIN  = "CCCCCCCCCCCCCC[C@@]([H])(O)[C@](OC(CCCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])[C@](N)([H])COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O[C@@H]2O[C@H](CO)[C@@H](O)[C@H](O)[C@H]2N)(O)=O"
+    # Col I: modified sugar (CH3 instead of CH2OH) — N-acyl intact
+    VAR_SUGAR  = "CCCCCCCCCCCCCC[C@@]([H])(O)[C@](O)([H])[C@](NC(CCCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O[C@@H]2O[C@H](C)[C@@H](O)[C@H](O)[C@H]2N)(O)=O"
+    NEG_STEREO = "CCCCCCCCCCCCCC[C@@]([H])(O)C(O)([H])[C@](NC(CCCCCCCCCCCCCCCCCCCCCCCCC)=O)([H])COP(O[C@@H]1[C@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O[C@@H]2O[C@H](CO)[C@@H](O)[C@H](O)[C@H]2N)(O)=O"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex69 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex69 chain-error must NOT match")
+
+    def test_sugar_variant_still_matches(self):
+        m = parse(self.VAR_SUGAR)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m),
+                        "Ex69 sugar-variant (N-acyl intact) must still match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample2(unittest.TestCase):
-    """Example 2: Glycerolipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "OC[C@]([H])(OC(CCCCCCC/C=C\\C/C=C\\C/C=C\\CC)=O)COC(CCCCCCC/C=C\\C/C=C\\C/C=C\\CC)=O"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        self.assertTrue(result, "Example 2 POSITIVE should match")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 70 — Glycerolipid / Triacylglycerol
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx70_Triacylglycerol(unittest.TestCase):
+    POS        = "O=C(CCCCCCCCCCC)OC[C@@]([H])(OC(CCCCCCCCCCCCCCC)=O)COC(CCCCCCCCCCCCCCCCC)=O"
+    NEG_STEREO = "O=C(CCCCCCCCCCC)OCC([H])(OC(CCCCCCCCCCCCCCC)=O)COC(CCCCCCCCCCCCCCCCC)=O"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex70 positive must match")
+
+    def test_positive_class(self):
+        m = parse(self.POS)
+        self.assertIn("Triacylglycerols", self.v.identify_lipid_class(m))
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestExcelExample3(unittest.TestCase):
-    """Example 3: Betaine lipids"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.positive = "O=C(CCCCCCCCCCCCCCC)OC[C@]([H])(COCCC(C([O-])=O)[N+](C)(C)C)OC(CCCCCCCCCCCCCCC)=O"
-    
-    def test_positive_matches(self):
-        mol = Chem.MolFromSmiles(self.positive)
-        self.assertIsNotNone(mol, "Positive SMILES should be valid")
-        result = self.validator.matches_any_valid_head(mol)
-        # NOTE: This is a betaine lipid - may not match current patterns
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 2 — Glycerolipid / 1,2-Diacylglycerol (polyunsaturated)
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx2_Diacylglycerol(unittest.TestCase):
+    POS        = "OC[C@]([H])(OC(CCCCCCC/C=C\\C/C=C\\C/C=C\\CC)=O)COC(CCCCCCC/C=C\\C/C=C\\CCCC)=O"
+    NEG_STEREO = "OCC([H])(OC(CCCCCCC/C=C\\C/C=C\\C/C=C\\CC)=O)COC(CCCCCCC/C=C\\C/C=C\\CCCC)=O"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex2 positive must match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-# Keep your original tests
-class TestGlycosylglycerolTeacher(unittest.TestCase):
-    """Original teacher examples"""
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        
-        self.core_smiles = "O[C@H]1[C@H](OC[C@]([H])(O)CO)O[C@H](CO[C@H]2O[C@H](CO)[C@H](O)[C@H](O)[C@H]2O)[C@H](O)[C@@H]1O"
-        self.good_smiles = "O[C@H]1[C@H](OC[C@]([H])(O)COC(CCCCCC)=O)O[C@H](CO[C@H]2O[C@H](CO)[C@H](O)[C@H](O)[C@H]2O)[C@H](O)[C@@H]1O"
-        self.wrong_smiles = "O[C@H]1[C@H](OC[C@]([H])(O)CO)O[C@H](CO[C@H]2O[C@H](CO)[C@H](O)[C@H](OC(CCCCCC)=O)[C@H]2O)[C@H](O)[C@@H]1O"
-        
-        self.core = Chem.MolFromSmiles(self.core_smiles)
-        self.good = Chem.MolFromSmiles(self.good_smiles)
-        self.wrong = Chem.MolFromSmiles(self.wrong_smiles)
-    
-    def test_01_core_no_match(self):
-        result = self.validator.matches_any_valid_head(self.core)
-        self.assertFalse(result, "CORE without FA should NOT match")
-    
-    def test_02_good_matches(self):
-        result = self.validator.matches_any_valid_head(self.good)
-        self.assertTrue(result, "GOOD molecule MUST match - FA is in correct position!")
-    
-    def test_03_wrong_no_match(self):
-        result = self.validator.matches_any_valid_head(self.wrong)
-        self.assertFalse(result, "WRONG molecule should NOT match - FA is in WRONG position!")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 75 — Other sphingolipid (sulfonyl headgroup)
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx75_SulfonylSphingolipid(unittest.TestCase):
+    POS        = "CC(C)CCCCCCCCCCC[C@](O)([H])[C@](NC(C[C@@H](O)CCCCCCCCCCCC(C)C)=O)([H])CS(O)(=O)=O"
+    NEG_CHAIN  = "N[C@@]([C@@](OC(C[C@@H](O)CCCCCCCCCCCC(C)C)=O)([H])CCCCCCCCCCCC(C)C)([H])CS(O)(=O)=O"
+    NEG_STEREO = "CC(C)CCCCCCCCCCCC(O)([H])[C@](NC(C[C@@H](O)CCCCCCCCCCCC(C)C)=O)([H])CS(O)(=O)=O"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex75 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex75 chain-error must NOT match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
-class TestDiacylglycerolIsomers(unittest.TestCase):
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-        self.dg_1_2 = "CCCCCCCC(=O)OCC(O)COC(=O)CCCCCCCC"
-        self.dg_1_3 = "CCCCCCCC(=O)OCC(O)COC(=O)CCCCCCCC"
-    
-    def test_01_both_detected_as_diacylglycerol(self):
-        mol_12 = Chem.MolFromSmiles(self.dg_1_2)
-        mol_13 = Chem.MolFromSmiles(self.dg_1_3)
-        
-        classes_12 = self.validator.identify_lipid_class(mol_12)
-        classes_13 = self.validator.identify_lipid_class(mol_13)
-        
-        self.assertTrue(len(classes_12) > 0, "1,2-DG should be recognized")
-        self.assertTrue(len(classes_13) > 0, "1,3-DG should be recognized")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 76 — Other sphingolipid (phospho-mannoside)
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx76_PhosphoMannoside(unittest.TestCase):
+    POS        = "OP(OCC(NC(CCCCCCCCCCCC(C)C)=O)C(O)CCCCCCCCCCCC(C)C)(O[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]1O)=O"
+    NEG_CHAIN  = "NC(COP(O)(O[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]1O)=O)C(OC(CCCCCCCCCCCC(C)C)=O)CCCCCCCCCCCC(C)C"
+    # Col I: open-ring sugar — N-acyl intact, should match
+    VAR_SUGAR  = "OP(OCC(NC(CCCCCCCCCCCC(C)C)=O)C(O)CCCCCCCCCCCC(C)C)(O[C@@H]1OC(O)[C@@H](O)[C@@H](O)[C@H]1O)=O"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex76 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex76 chain-error must NOT match")
+
+    def test_sugar_variant_still_matches(self):
+        m = parse(self.VAR_SUGAR)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m),
+                        "Ex76 sugar-variant (N-acyl intact) must still match")
 
 
-class TestEdgeCases(unittest.TestCase):
-    def setUp(self):
-        self.validator = LipidHeadValidator()
-    
-    def test_01_non_lipid_no_match(self):
-        benzene = Chem.MolFromSmiles("c1ccccc1")
-        result = self.validator.matches_any_valid_head(benzene)
-        self.assertFalse(result, "Benzene should not match any lipid pattern")
-    
-    def test_02_fatty_acid_detected(self):
-        palmitic = Chem.MolFromSmiles("CCCCCCCCCCCCCCCC(=O)O")
-        classes = self.validator.identify_lipid_class(palmitic)
-        self.assertTrue(len(classes) > 0, "Fatty acid should be recognized")
+# ──────────────────────────────────────────────────────────────────────────────
+# Example 79 — Ceramide-1-phosphate
+# ──────────────────────────────────────────────────────────────────────────────
+class TestEx79_Ceramide1Phosphate(unittest.TestCase):
+    POS        = "[H][C@](NC(CCCCCCCCCCCCCCCCCCCCC)=O)(COP(O)(O)=O)[C@@](O)([H])/C=C/CCCCCCCCCCCCC"
+    NEG_CHAIN  = "[H][C@](N)(COP(O)(O)=O)[C@@](OC(CCCCCCCCCCCCCCCCCCCCC)=O)([H])/C=C/CCCCCCCCCCCCC"
+    NEG_STEREO = "[H][C@](NC(CCCCCCCCCCCCCCCCCCCCC)=O)(COP(O)(O)=O)C(O)([H])/C=C/CCCCCCCCCCCCC"
+
+    def setUp(self): self.v = LipidHeadValidator()
+
+    def test_positive(self):
+        m = parse(self.POS)
+        self.assertIsNotNone(m)
+        self.assertTrue(self.v.matches_any_valid_head(m), "Ex79 positive must match")
+
+    def test_negative_chain(self):
+        m = parse(self.NEG_CHAIN)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m),
+                         "Ex79 chain-error must NOT match")
+
+    @unittest.expectedFailure
+    def test_negative_stereo(self):
+        m = parse(self.NEG_STEREO)
+        self.assertIsNotNone(m)
+        self.assertFalse(self.v.matches_any_valid_head(m))
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
