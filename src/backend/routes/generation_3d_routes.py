@@ -61,7 +61,25 @@ async def playwright_render(sdf):
         page = await ctx.new_page()
         await page.set_content(html, wait_until="networkidle")
         await page.wait_for_function("window.__done === true", timeout=15000)
-        await page.wait_for_timeout(1200)
+
+        try:
+            await page.wait_for_function(
+                """() => {
+                    var c = document.querySelector('canvas');
+                    if (!c || c.width === 0 || c.height === 0) return false;
+                    var ctx2d = c.getContext('2d');
+                    if (!ctx2d) return false;
+                    var d = ctx2d.getImageData(0, 0, Math.min(c.width,100), Math.min(c.height,100)).data;
+                    for (var i = 0; i < d.length; i += 4) {
+                        if (d[i] < 245 || d[i+1] < 245 || d[i+2] < 245) return true;
+                    }
+                    return false;
+                }""",
+                timeout=6000
+            )
+        except Exception:
+            await page.wait_for_timeout(800)
+
         png = await page.screenshot(
             type="png",
             clip={"x": 0, "y": 0, "width": vw, "height": vh}
@@ -69,6 +87,12 @@ async def playwright_render(sdf):
         await browser.close()
 
     img = Image.open(io.BytesIO(png)).resize((RENDER_W, RENDER_H), Image.LANCZOS)
+
+    pixels = list(img.getdata())
+    non_white = sum(1 for px in pixels if px[0] < 245 or px[1] < 245 or px[2] < 245)
+    if non_white < 100:
+        raise ValueError("Rendered image is blank — molecule did not render in time")
+
     buf = io.BytesIO()
     img.save(buf, format="PNG", optimize=True)
     return buf.getvalue()
