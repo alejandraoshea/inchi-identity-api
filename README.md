@@ -112,8 +112,22 @@ inchi compare file1.txt file2.txt --mode cross --only-equal > src/backend/output
 
 6. Compare two mgf files
 ```bash
-
+inchi compare-mgf test_file1.mgf test_file2.mgf --level COMPLETE_IDENTITY
 ```
+The user can select the level of identity, and if not specified, the default level is COMPLETE_IDENTITY. In addition, --output-mgf is used to specify the name of the output file and --output-log for the name of the log file.
+
+Case 1: InChI 
+```bash
+inchi compare-mgf test_file1.mgf test_file2.mgf --level COMPLETE_IDENTITY --output-mgf unified.mgf --output-log unified_log.json
+inchi compare-mgf test_protonation_file1.mgf test_protonation_file2.mgf --level CHARGES_INDEPENDENCE --output-mgf unified.mgf --output-log unified_log.json
+```
+
+Case 2: SMILES
+```bash
+inchi compare-mgf test_smiles_file1.mgf test_smiles_file2.mgf --level COMPLETE_IDENTITY --output-mgf unified_smiles.mgf --output-log unified_log_smiles.json                   
+inchi compare-mgf test_smiles_file1.mgf test_smiles_file2.mgf --level CHARGES_INDEPENDENCE --output-mgf unified_smiles_charges.mgf --output-log unified_log_smiles_charges.json
+```
+
 
 ### Example Input
 ```bash
