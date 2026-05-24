@@ -4,8 +4,6 @@ from rdkit import Chem
 
 
 class TestNormalizeInput(unittest.TestCase):
-    """normalize_input must convert valid SMILES to InChI strings."""
-
     def test_valid_smiles_becomes_inchi(self):
         result = InChI.normalize_input("CCO")
         self.assertTrue(result.startswith("InChI="), f"Expected InChI, got: {result}")
@@ -15,7 +13,6 @@ class TestNormalizeInput(unittest.TestCase):
         self.assertEqual(InChI.normalize_input(inchi), inchi)
 
     def test_invalid_smiles_returns_input(self):
-        # Garbage string: can't be converted; normalize_input should return it as-is
         result = InChI.normalize_input("NOT_A_SMILES!!!")
         self.assertEqual(result, "NOT_A_SMILES!!!")
 
@@ -26,18 +23,14 @@ class TestNormalizeInput(unittest.TestCase):
         self.assertIsNone(InChI.normalize_input(None))
 
     def test_canonical_smiles_equivalents(self):
-        # OCC and CCO are both ethanol — must produce the same InChI
         self.assertEqual(InChI.normalize_input("CCO"), InChI.normalize_input("OCC"))
 
 
 class TestCompleteIdentitySmiles(unittest.TestCase):
-    """isCompleteIdentity: same molecule expressed as different SMILES → True."""
-
     def test_same_smiles(self):
         self.assertTrue(InChI.isCompleteIdentity("CCO", "CCO"))
 
     def test_different_smiles_same_molecule(self):
-        # OCC and CCO are both ethanol
         self.assertTrue(InChI.isCompleteIdentity("CCO", "OCC"))
 
     def test_different_molecules(self):
@@ -55,10 +48,7 @@ class TestCompleteIdentitySmiles(unittest.TestCase):
 
 
 class TestNoIsotopesSmiles(unittest.TestCase):
-    """areEqualNoIsotopes: SMILES with/without isotope labels should match."""
-
     def test_smiles_matches_isotope_inchi(self):
-        # L-phenylalanine SMILES vs isotope-labelled InChI
         inchi_with_isotope = "InChI=1S/C9H11NO2/c10-8(9(11)12)6-7-4-2-1-3-5-7/h1-5,8H,6,10H2,(H,11,12)/t8-/m0/s1/i1D"
         smi_no_isotope = "N[C@@H](Cc1ccccc1)C(=O)O"
         self.assertTrue(InChI.areEqualNoIsotopes(smi_no_isotope, inchi_with_isotope))
@@ -71,25 +61,20 @@ class TestNoIsotopesSmiles(unittest.TestCase):
 
 
 class TestDissolvedSaltsSmiles(unittest.TestCase):
-    """areEqualDisolvedSalts: strips counter-ions; same organic fragment → True."""
-
     def test_same_smiles(self):
         self.assertTrue(InChI.areEqualDisolvedSalts("CCO", "CCO"))
 
     def test_different_halide_counter_ions(self):
-        # Betaine·HCl vs Betaine·HBr — same organic cation, different halide
         smiles_hcl = "C[N+](C)(C)CC(=O)O.Cl"
         smiles_hbr = "C[N+](C)(C)CC(=O)O.Br"
         self.assertTrue(InChI.areEqualDisolvedSalts(smiles_hcl, smiles_hbr))
 
     def test_different_metal_cations(self):
-        # Sodium vs potassium acetate — same organic anion
         na_acetate = "CC(=O)[O-].[Na+]"
         k_acetate  = "CC(=O)[O-].[K+]"
         self.assertTrue(InChI.areEqualDisolvedSalts(na_acetate, k_acetate))
 
     def test_smiles_vs_inchi_salt(self):
-        # Sodium acetate SMILES vs potassium acetate InChI
         na_smi   = "CC(=O)[O-].[Na+]"
         k_inchi  = "InChI=1S/C2H4O2.K/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
         self.assertTrue(InChI.areEqualDisolvedSalts(na_smi, k_inchi))
@@ -99,13 +84,10 @@ class TestDissolvedSaltsSmiles(unittest.TestCase):
 
 
 class TestNoChargesSmiles(unittest.TestCase):
-    """areEqualNoCharges: neutral and ionised SMILES of the same molecule should match."""
-
     def test_carboxylate_vs_carboxylic_acid(self):
         self.assertTrue(InChI.areEqualNoCharges("CC(=O)[O-]", "CC(=O)O"))
 
     def test_zwitterion_vs_protonated(self):
-        # Betaine inner salt vs singly protonated carboxylate
         zwitterion  = "C[N+](C)(C)CC(=O)[O-]"
         protonated  = "C[N+](C)(C)CC(=O)O"
         self.assertTrue(InChI.areEqualNoCharges(zwitterion, protonated))
@@ -120,13 +102,6 @@ class TestNoChargesSmiles(unittest.TestCase):
 
 
 class TestNoStereoSmiles(unittest.TestCase):
-    """areEqualNoStereo: stereoisomers should match; different molecules should not.
-
-    NOTE: this requires the bug-fix in areEqualNoStereo — the final comparison must
-    use canonical SMILES strings, not mol object equality (which is reference equality
-    in RDKit and always returns False for two different objects).
-    """
-
     def test_l_and_d_phenylalanine(self):
         l_phe = "N[C@@H](Cc1ccccc1)C(=O)O"
         d_phe = "N[C@H](Cc1ccccc1)C(=O)O"
@@ -144,34 +119,27 @@ class TestNoStereoSmiles(unittest.TestCase):
         self.assertTrue(InChI.areEqualNoStereo("CCO", "CCO"))
 
     def test_same_molecule_different_smiles_no_stereo(self):
-        # Canonical reorderings of the same achiral molecule
         self.assertTrue(InChI.areEqualNoStereo("CCO", "OCC"))
 
 
 class TestNoPositionDoubleBondSmiles(unittest.TestCase):
-    """areEqualNoPositionDoubleBond: fatty acids differing only in DB position/geometry."""
-
     def test_cis_trans_oleic_smiles(self):
-        # Both are 18:1 Δ9; differ only in geometry
         cis_oleic   = "CCCCCCCCC=CCCCCCCCC(=O)O"
         trans_oleic = "CCCCCCCC/C=C/CCCCCCCC(=O)O"
         self.assertTrue(InChI.areEqualNoPositionDoubleBond(cis_oleic, trans_oleic))
 
     def test_shifted_double_bond(self):
-        # 18:1 Δ9 vs 18:1 Δ11 — same chain length, shifted position
         delta9  = "CCCCCCCCC=CCCCCCCCC(=O)O"
         delta11 = "CCCCCCC=CCCCCCCCCCC(=O)O"
         self.assertTrue(InChI.areEqualNoPositionDoubleBond(delta9, delta11))
 
     def test_different_chain_length(self):
-        # C18 vs C16 — should NOT match
         c18 = "CCCCCCCCC=CCCCCCCCC(=O)O"
         c16 = "CCCCCCC=CCCCCCCCC(=O)O"
         self.assertFalse(InChI.areEqualNoPositionDoubleBond(c18, c16))
 
 
 class TestMixedInputTypes(unittest.TestCase):
-    """One input is SMILES, the other InChI — all methods must handle this."""
 
     ETHANOL_SMILES = "CCO"
     ETHANOL_INCHI  = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
@@ -189,7 +157,6 @@ class TestMixedInputTypes(unittest.TestCase):
         self.assertTrue(InChI.areEqualNoCharges(self.ETHANOL_SMILES, self.ETHANOL_INCHI))
 
     def test_no_stereo_mixed(self):
-        # Requires the areEqualNoStereo bug-fix (SMILES comparison instead of mol ==)
         self.assertTrue(InChI.areEqualNoStereo(self.ETHANOL_SMILES, self.ETHANOL_INCHI))
 
 
