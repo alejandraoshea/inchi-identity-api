@@ -31,9 +31,31 @@ class InChI:
         except Exception as e:
             print(f"RDKit conversion failed for InChI: {inchi}\nError: {e}")
             return None
+        
+    @staticmethod
+    def normalize_input(structure: str) -> str:
+        if not structure:
+            return structure
+        
+        structure = structure.strip()
+        
+        if structure.startswith("InChI="):
+            return structure
+        
+        try:
+            mol = Chem.MolFromSmiles(structure)
+            if mol:
+                return Chem.MolToInchi(mol)
+        except:
+            pass
+        
+        return structure
 
 
     def areEqualNoIsotopes(inchi1: str, inchi2: str) -> bool:
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
+    
         inchi1_isotopes = InChIParser.removeIsotopicLayers(inchi1)
         inchi2_isotopes = InChIParser.removeIsotopicLayers(inchi2)
         return inchi1_isotopes == inchi2_isotopes
@@ -49,6 +71,8 @@ class InChI:
             return mol
 
     def areEqualDisolvedSalts(inchi1: str, inchi2: str) -> bool:
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
@@ -117,6 +141,9 @@ class InChI:
         return uncharger.uncharge(parent_clean_mol)
 
     def areEqualNoCharges(inchi1: str, inchi2: str) -> bool:
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
+
         # STEP 1: remove isotopes
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)
@@ -173,6 +200,9 @@ class InChI:
         if inchi1 == inchi2:
             return True
 
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
+
         # STEP 1: remove isotopes
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)
@@ -213,6 +243,9 @@ class InChI:
     def areEqualNoPositionDoubleBond(inchi1: str, inchi2: str) -> bool:
         if inchi1 == inchi2:
             return True
+        
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
 
         # STEP 1: remove isotopes
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
@@ -316,6 +349,9 @@ class InChI:
                 "InChI Trust path not provided. Set INCHITRUST_PATH environment variable."
             )
 
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
+
         # STEP 1: remove isotope layers
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)
@@ -412,6 +448,9 @@ class InChI:
 
     @staticmethod
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
+        
         # STEP 1: remove isotopes
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)

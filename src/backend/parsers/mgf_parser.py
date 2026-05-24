@@ -353,14 +353,16 @@ class SimpleMgfDeduplicator:
             
             if structure and structure in canonical_map:
                 canonical_struct, canonical_field = canonical_map[structure]
-        
-                if field_name == "INCHI":
-                    entry_copy["INCHI"] = canonical_struct
-                elif field_name == "SMILES":
-                    entry_copy["SMILES"] = canonical_struct
+                
+                if "SMILES" in entry_copy:
+                    del entry_copy["SMILES"]
+                if "INCHI" in entry_copy:
+                    del entry_copy["INCHI"]
+                
+                entry_copy["INCHI"] = canonical_struct
             
             modified_entries.append(entry_copy)
-        
+
         return modified_entries
       
     def cross_unify(
@@ -413,10 +415,11 @@ class SimpleMgfDeduplicator:
                                 structure_type=field_b
                             ))
                     
-                    if field_b == "INCHI":
-                        entry_copy["INCHI"] = matched_canonical
-                    elif field_b == "SMILES":
-                        entry_copy["SMILES"] = matched_canonical
+                    if "SMILES" in entry_copy:
+                        del entry_copy["SMILES"]
+                    if "INCHI" in entry_copy:
+                        del entry_copy["INCHI"]
+                    entry_copy["INCHI"] = matched_canonical  # Siempre InChI
             
             modified_b.append(entry_copy)
         
