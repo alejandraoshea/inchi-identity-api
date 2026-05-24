@@ -16,13 +16,25 @@ def compare_inchis():
         data = request.get_json()
         if not data:
             return jsonify({"message": "No JSON received"}), 400
-        inchi1 = data.get("inchi1")
-        inchi2 = data.get("inchi2")
-        if not inchi1 or not inchi2:
+        
+        input1 = data.get("inchi1", "").strip()
+        input2 = data.get("inchi2", "").strip()
+        
+        if not input1 or not input2:
             return jsonify({"message": "Missing InChIs"}), 400
+        
+        inchi1 = InChI.normalize_input(input1)
+        inchi2 = InChI.normalize_input(input2)
+        
         config = load_config()
         result = compare_pair(inchi1, inchi2, config)
-        return jsonify({"results": result["results"]})
+        
+        return jsonify({
+            "inchi_1": inchi1,
+            "inchi_2": inchi2,
+            "results": result["results"]
+        })
+    
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -33,15 +45,27 @@ def compare_inchis_custom():
         data = request.get_json()
         if not data:
             return jsonify({"message": "No JSON received"}), 400
-        inchi1 = data.get("inchi1")
-        inchi2 = data.get("inchi2")
+        
+        input1 = data.get("inchi1", "").strip()
+        input2 = data.get("inchi2", "").strip()
         selected_levels = data.get("levels", [])
-        if not inchi1 or not inchi2:
+        
+        if not input1 or not input2:
             return jsonify({"message": "Missing InChIs"}), 400
+        
+        inchi1 = InChI.normalize_input(input1)
+        inchi2 = InChI.normalize_input(input2)
+        
         base_config = load_config()
         config = build_config_from_levels(selected_levels, base_config)
         result = compare_pair(inchi1, inchi2, config)
-        return jsonify({"results": result["results"]})
+        
+        return jsonify({
+            "inchi_1": inchi1,
+            "inchi_2": inchi2,
+            "results": result["results"]
+        })
+    
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 

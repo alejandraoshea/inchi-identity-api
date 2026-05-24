@@ -150,13 +150,42 @@ function renderResults(data) {
         changesLog.forEach(function(change) {
             var item = document.createElement("div");
             item.className = "mgf-log-item";
+
+            var steps = "";
+
+            var typeLabel = change.structure_type === "SMILES" ? "SMILES" : "InChI";
+            steps +=
+                "<div class='mgf-log-step'>" +
+                    "<span class='mgf-log-step-label'>Original (" + typeLabel + ")</span>" +
+                    "<span class='mgf-log-inchi original'>" + change.original_structure + "</span>" +
+                "</div>";
+
+            if (change.smiles_to_inchi) {
+                steps +=
+                    "<div class='mgf-log-step'>" +
+                        "<span class='mgf-log-step-label'>→ Converted to InChI</span>" +
+                        "<span class='mgf-log-inchi'>" + change.smiles_to_inchi + "</span>" +
+                    "</div>";
+            }
+
+            if (change.normalized_inchi && change.normalized_inchi !== change.smiles_to_inchi) {
+                steps +=
+                    "<div class='mgf-log-step'>" +
+                        "<span class='mgf-log-step-label'> → Normalized (" + change.structure_type + ")</span>" +
+                        "<span class='mgf-log-inchi'>" + change.normalized_inchi + "</span>" +
+                    "</div>";
+            }
+
+            steps +=
+                "<div class='mgf-log-step'>" +
+                    "<span class='mgf-log-step-label'> → Canonical InChI</span>" +
+                    "<span class='mgf-log-inchi canonical'>" + change.canonical_inchi + "</span>" +
+                "</div>";
+
             item.innerHTML =
                 "<div class='mgf-log-arrow'>→</div>" +
-                "<div class='mgf-log-detail'>" +
-                    "<div class='mgf-log-inchi original'>" + change.original_inchi + "</div>" +
-                    "<div class='mgf-log-into'>unified into</div>" +
-                    "<div class='mgf-log-inchi canonical'>" + change.canonical_inchi + "</div>" +
-                "</div>";
+                "<div class='mgf-log-detail'>" + steps + "</div>";
+
             logList.appendChild(item);
         });
 

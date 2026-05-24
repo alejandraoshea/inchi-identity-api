@@ -15,6 +15,28 @@ RENDER_W     = 800
 RENDER_H     = 500
 RENDER_SCALE = 2
 
+def normalize_to_inchi(input_str: str) -> str:
+    if not input_str:
+        raise ValueError("Empty input")
+    
+    input_str = input_str.strip()
+    
+    if input_str.startswith("InChI="):
+        return input_str
+    
+    try:
+        mol = Chem.MolFromSmiles(input_str)
+        if mol is None:
+            raise ValueError(f"Invalid SMILES: {input_str}")
+        
+        inchi = Chem.MolToInchi(mol)
+        if not inchi:
+            raise ValueError(f"Could not convert SMILES to InChI: {input_str}")
+        
+        return inchi
+    
+    except Exception as e:
+        raise ValueError(f"Invalid input (not SMILES or InChI): {input_str} - {e}")
 
 def inchi_to_mol3d(inchi):
     mol = Chem.MolFromInchi(inchi)
@@ -110,37 +132,50 @@ def run_async(coro):
 @generation_3d_routes.route("/api/generate_3d", methods=["POST"])
 def generate_3d():
     try:
-        inchi = request.json.get("inchi")
+        input_str = request.json.get("inchi")  
+        
+        inchi = normalize_to_inchi(input_str)
+        
         mol, sdf = inchi_to_mol3d(inchi)
         if mol is None:
             return jsonify({"error": "Could not generate 3D molecule"}), 400
-        return jsonify({"sdf": sdf})
+        
+        return jsonify({"sdf": sdf, "inchi": inchi})  
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @generation_3d_routes.route("/api/render_3d_image", methods=["POST"])
 def render_3d_image():
-    inchi = request.json.get("inchi")
-    mol, sdf = inchi_to_mol3d(inchi)
-    if mol is None:
-        return jsonify({"error": "Could not generate 3D molecule"}), 400
-
     try:
-        png = run_async(playwright_render(sdf))
-        b64 = base64.b64encode(png).decode("utf-8")
-        return jsonify({"image": b64, "sdf": sdf})
+        input_str = request.json.get("inchi")
+        
+        inchi = normalize_to_inchi(input_str)
+        
+        mol, sdf = inchi_to_mol3d(inchi)
+        if mol is None:
+            return jsonify({"error": "Could not generate 3D molecule"}), 400
 
-    except Exception as e:
-        print("Playwright render failed:", e)
-        traceback.print_exc()
         try:
-            mol2d = Chem.RemoveHs(mol)
-            AllChem.Compute2DCoords(mol2d)
-            drawer = rdMolDraw2D.MolDraw2DCairo(RENDER_W, RENDER_H)
-            drawer.DrawMolecule(mol2d)
-            drawer.FinishDrawing()
-            b64 = base64.b64encode(drawer.GetDrawingText()).decode("utf-8")
-            return jsonify({"image": b64, "sdf": sdf})
-        except Exception as e2:
-            return jsonify({"error": str(e2)}), 500
+            png = run_async(playwright_render(sdf))
+            b64 = base64.b64encode(png).decode("utf-8")
+            return jsonify({"image": b64, "sdf": sdf, "inchi": inchi})
+
+        except Exception as e:
+            print("Playwright render failed:", e)
+            traceback.print_exc()
+            try:
+                mol2d = Chem.RemoveHs(mol)
+                AllChem.Compute2DCoords(mol2d)
+                drawer = rdMolDraw2D.MolDraw2DCairo(RENDER_W, RENDER_H)
+                drawer.DrawMolecule(mol2d)
+                drawer.FinishDrawing()
+                b64 = base64.b64encode(drawer.GetDrawingText()).decode("utf-8")
+                return jsonify({"image": b64, "sdf": sdf, "inchi": inchi})
+            
+            except Exception as e2:
+                return jsonify({"error": str(e2)}), 500
+                
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -16,6 +16,8 @@ from rdkit.Chem.MolStandardize import rdMolStandardize
 
 class InChI:
     def isCompleteIdentity(inchi1: str, inchi2: str) -> bool:
+        inchi1 = InChI.normalize_input(inchi1)
+        inchi2 = InChI.normalize_input(inchi2)
         return inchi1 == inchi2
 
     def mol_from_inchi(inchi: str):
@@ -73,6 +75,7 @@ class InChI:
     def areEqualDisolvedSalts(inchi1: str, inchi2: str) -> bool:
         inchi1 = InChI.normalize_input(inchi1)
         inchi2 = InChI.normalize_input(inchi2)
+
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
@@ -203,7 +206,6 @@ class InChI:
         inchi1 = InChI.normalize_input(inchi1)
         inchi2 = InChI.normalize_input(inchi2)
 
-        # STEP 1: remove isotopes
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)
 
@@ -213,18 +215,20 @@ class InChI:
         if mol1 is None or mol2 is None:
             return False
 
-        # STEP 2: remove salts
         mol1 = InChI.main_fragment(mol1)
         mol2 = InChI.main_fragment(mol2)
 
-        # STEP 3: neutralize charges
         mol1 = InChI.neutralize_molecule(mol1)
         mol2 = InChI.neutralize_molecule(mol2)
 
-        mol1_no_stereo = InChI.remove_cis_trans(mol1)
-        mol2_no_stereo = InChI.remove_cis_trans(mol2)
-        return mol1_no_stereo == mol2_no_stereo
- 
+        mol1 = InChI.remove_cis_trans(mol1)
+        mol2 = InChI.remove_cis_trans(mol2)
+
+        # FIX: compare canonical SMILES, not mol objects (== is reference equality in RDKit)
+        sig1 = Chem.MolToSmiles(mol1, canonical=True, isomericSmiles=False)
+        sig2 = Chem.MolToSmiles(mol2, canonical=True, isomericSmiles=False)
+        return sig1 == sig2
+
     # STEP 1 remove cis/trans stereochemistry
     @staticmethod
     def remove_cis_trans(mol):
@@ -450,7 +454,7 @@ class InChI:
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:
         inchi1 = InChI.normalize_input(inchi1)
         inchi2 = InChI.normalize_input(inchi2)
-        
+
         # STEP 1: remove isotopes
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
         inchi2 = InChIParser.removeIsotopicLayers(inchi2)

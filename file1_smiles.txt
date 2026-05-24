@@ -1,0 +1,3 @@
+CC(=O)O
+CCO
+CN(C)(C)CC(=O)O

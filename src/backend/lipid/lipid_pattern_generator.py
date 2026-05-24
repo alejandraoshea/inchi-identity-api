@@ -186,7 +186,7 @@ def build_combined_patterns(manual_patterns: Dict[str, HeadgroupPattern],
                         all_patterns[pattern_id] = pattern
                         added += 1
                 
-                print(f"✓ Total patterns: {len(all_patterns)} "
+                print(f"[OK] Total patterns: {len(all_patterns)} "
                       f"({len(manual_patterns)} manual + {added} generated)")
         except Exception as e:
             print(f"Pattern generation failed: {e}")
