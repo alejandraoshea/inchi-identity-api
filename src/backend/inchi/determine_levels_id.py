@@ -33,7 +33,7 @@ class InChI:
         except Exception as e:
             print(f"RDKit conversion failed for InChI: {inchi}\nError: {e}")
             return None
-        
+    
     @staticmethod
     def normalize_input(structure: str) -> str:
         if not structure:
@@ -45,13 +45,26 @@ class InChI:
             return structure
         
         try:
-            mol = Chem.MolFromSmiles(structure)
-            if mol:
-                return Chem.MolToInchi(mol)
-        except:
-            pass
-        
-        return structure
+            mol = Chem.MolFromSmiles(structure, sanitize=True)
+            
+            if mol is None:
+                return structure
+            
+            Chem.SanitizeMol(mol)
+            Chem.AssignStereochemistry(mol, cleanIt=True, force=True)
+            
+            inchi_result = Chem.MolToInchi(mol)
+            if inchi_result:
+                return inchi_result.strip()
+            else:
+                print(f"InChI generation failed for valid SMILES: {structure}")
+                return structure
+                
+        except Exception as e:
+            print(f"\Error during SMILES→InChI conversion:")
+            print(f"    Input: {structure}")
+            print(f"    Error: {e}")
+            return structure
 
 
     def areEqualNoIsotopes(inchi1: str, inchi2: str) -> bool:
@@ -101,7 +114,6 @@ class InChI:
 
         return inchi1_final == inchi2_final
     
-    #helper method: detect negative charge to neutralize the mol
     def has_negative_charge(inchi: str) -> bool:
         for part in inchi.split("/"):
             if part.startswith("q-") or part.startswith("p-"):
@@ -131,7 +143,7 @@ class InChI:
         for p in inchi.strip().split("/"):
             if p.startswith("p"):
                 continue
-            if p:  # avoid empty segments
+            if p: 
                 parts.append(p.strip())
         return "/".join(parts)
   
@@ -328,7 +340,7 @@ class InChI:
         try:
             molblock = Chem.MolToMolBlock(mol)
             process = subprocess.run(
-                [inchitrust_path],
+                [inchitrust_path, "/STDIO"],
                 input=molblock,
                 text=True,
                 capture_output=True,

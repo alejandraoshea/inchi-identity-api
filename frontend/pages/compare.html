@@ -8,7 +8,7 @@
 <script src="https://unpkg.com/@rdkit/rdkit/dist/RDKit_minimal.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.4/3Dmol-min.js"></script>
 </head>
-<body>
+<body class="page-compare">
     <div class="header">
         <div class="title">Metaboid Identity Comparison</div>
         <div class="nav">
@@ -27,8 +27,8 @@
     <div class="container">
         <div class="panel">
             <div class="title-section">Compare Molecules</div>
-            <textarea id="inchi1" placeholder="Molecule A"></textarea>
-            <textarea id="inchi2" placeholder="Molecule B"></textarea>
+            <textarea id="inchi1" placeholder="Molecule A — paste InChI here"></textarea>
+            <textarea id="inchi2" placeholder="Molecule B — paste InChI here"></textarea>
             <button data-compare onclick="compare()">Compare</button>
         </div>
         <div class="panel center">

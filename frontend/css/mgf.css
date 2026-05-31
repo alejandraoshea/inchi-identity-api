@@ -186,8 +186,7 @@
 }
 
 .mgf-log-list {
-    max-height: 400px;
-    overflow-y: auto;
+    overflow-y: visible;
 }
 
 .mgf-log-item {
@@ -351,4 +350,26 @@
     padding: 8px 18px;
     font-size: 13px;
     flex-shrink: 0;
+}
+
+#mgf-results-container {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+}
+
+body.page-compare .container,
+body.page-advanced .container {
+    height: calc(100vh - 57px);
+    max-height: calc(100vh - 57px);
+    overflow: hidden;
+}
+
+body.page-compare .panel,
+body.page-advanced .panel {
+    min-height: 0;
+    overflow: hidden;
 }
