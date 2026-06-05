@@ -1,4 +1,5 @@
 from rdkit import Chem
+from rdkit.Chem import inchi as rdInchi
 
 class InChIParser:
     def getMainLayer(inchi: str): #obtains chemical formula
@@ -149,6 +150,12 @@ class InChIParser:
             return (main, conn)
 
         return None
+    
+    def get_stereo_layer(mol: Chem.Mol) -> str:
+        i = rdInchi.MolToInchi(mol) or ''
+        parts = [p for p in i.split('/') if p.startswith(('t', 'm', 's'))]
+        return '/'.join(parts)
+
 
     def removeStereoLayers(inchi: str) -> str:
         parts = []
