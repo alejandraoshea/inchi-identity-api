@@ -485,9 +485,6 @@ class LipidHeadValidator:
     def is_valid_lipid_structure(mol: Chem.Mol) -> bool:
         return LipidHeadValidator().matches_any_valid_head(mol)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-
 class LipidAnalysis:
     CLASSYFIRE_URL = "https://classyfire.wishartlab.com/entities.json"
     MIN_TAIL_CARBONS = 6
@@ -505,6 +502,15 @@ class LipidAnalysis:
         "serine":               Chem.MolFromSmarts("OC(N)C(=O)[O-]"),
     }
 
+    @staticmethod
+    def parse_smiles(smiles: str) -> Chem.Mol:
+        #Parse a SMILES string into an RDKit molecule.
+        if not smiles:
+            return None
+        if "[G]" in smiles or "[R]" in smiles:
+            return None
+        return Chem.MolFromSmiles(smiles.strip())
+    
     @staticmethod
     def is_lipid_rdkit(mol):
         if mol is None:

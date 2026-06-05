@@ -1,15 +1,7 @@
 import unittest
 from rdkit import Chem
-from src.backend.lipid.lipid_analysis import LipidHeadValidator
+from src.backend.lipid.lipid_analysis import LipidHeadValidator, LipidAnalysis
 from src.backend.inchi.inchi_parser import InChIParser
-
-
-def parse(smiles):
-    """Parse a SMILES string into an RDKit molecule. Returns None on failure."""
-    if not smiles: return None
-    if "[G]" in smiles or "[R]" in smiles: return None
-    return Chem.MolFromSmiles(smiles.strip())
-
 
 class TestEx7__2_NeutralGlycosphingolipids(unittest.TestCase):
     """Galβ1-4GlcNAcα1-3Galβ1-4GlcNAcβ1-3Galβ1-4Glcβ-Cer(d18:1/16:0)"""
@@ -19,7 +11,7 @@ class TestEx7__2_NeutralGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -31,7 +23,7 @@ class TestEx60__2_AcidicGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -43,7 +35,7 @@ class TestEx66__2_Phosphosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -54,7 +46,7 @@ class TestEx67__2_AcidicGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -66,7 +58,7 @@ class TestEx69__2_Unknown(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -78,12 +70,12 @@ class TestEx3__3_BetaineLipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -96,7 +88,7 @@ class TestEx76__2_OtherSphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -108,12 +100,12 @@ class TestEx77__2_Ceramides(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -125,7 +117,7 @@ class TestEx78__2_Ceramides(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -136,7 +128,7 @@ class TestEx80__2_BasicSpNeutralAndAcidic(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -148,12 +140,12 @@ class TestEx81__02_AmphotericGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -167,18 +159,18 @@ class TestEx3__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -192,18 +184,18 @@ class TestEx4__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -217,18 +209,18 @@ class TestEx5__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -242,18 +234,18 @@ class TestEx6__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -267,18 +259,18 @@ class TestEx7__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -292,18 +284,18 @@ class TestEx8__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -317,18 +309,18 @@ class TestEx9__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -342,18 +334,18 @@ class TestEx10__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -367,18 +359,18 @@ class TestEx11__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -392,18 +384,18 @@ class TestEx12__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -417,18 +409,18 @@ class TestEx13__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -442,18 +434,18 @@ class TestEx14__3_Sterols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -467,18 +459,18 @@ class TestEx15__3_Isoprenoids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -492,18 +484,18 @@ class TestEx16__3_Isoprenoids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -517,16 +509,16 @@ class TestEx17__3_Isoprenoids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -539,12 +531,12 @@ class TestEx18__3_Isoprenoids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
@@ -558,18 +550,18 @@ class TestEx19__3_QuinonesAndHydroquinones(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -583,18 +575,18 @@ class TestEx20__3_Acylaminosugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -608,18 +600,18 @@ class TestEx21__3_Acylaminosugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -633,18 +625,18 @@ class TestEx22__3_Acylaminosugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -658,18 +650,18 @@ class TestEx23__3_Acylaminosugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -683,18 +675,18 @@ class TestEx24__3_Acylaminosugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -708,18 +700,18 @@ class TestEx25__3_AcylaminosugarGlycans(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -733,18 +725,18 @@ class TestEx26__3_Acyltrehaloses(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -757,12 +749,12 @@ class TestEx27__3_Acyltrehaloses(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -775,12 +767,12 @@ class TestEx28__3_Acyltrehaloses(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -793,12 +785,12 @@ class TestEx29__3_Acyltrehaloses(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -810,7 +802,7 @@ class TestEx30__3__29_Acyltrehaloses(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -822,12 +814,12 @@ class TestEx31__3_Acyltrehaloses(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -840,12 +832,12 @@ class TestEx32__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -858,12 +850,12 @@ class TestEx33__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -876,12 +868,12 @@ class TestEx34__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -894,12 +886,12 @@ class TestEx35__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -911,7 +903,7 @@ class TestEx36__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -923,12 +915,12 @@ class TestEx37__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -940,7 +932,7 @@ class TestEx38__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -953,18 +945,18 @@ class TestEx39__3_OtherAcylSugars(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -977,12 +969,12 @@ class TestEx40__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -995,12 +987,12 @@ class TestEx41__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1014,18 +1006,18 @@ class TestEx42__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1037,7 +1029,7 @@ class TestEx42_OH__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1049,12 +1041,12 @@ class TestEx43__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1066,7 +1058,7 @@ class TestEx44__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1080,22 +1072,22 @@ class TestEx45__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1108,12 +1100,12 @@ class TestEx46__3_OtherGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1126,12 +1118,12 @@ class TestEx47__3_Glycerophosphocholines(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1145,18 +1137,18 @@ class TestEx48__3_Glycerophosphoethanolamines(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1170,18 +1162,18 @@ class TestEx49__3_Glycerophosphoserines(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1195,18 +1187,18 @@ class TestEx50__3_Glycerophosphoglycerols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1220,18 +1212,18 @@ class TestEx51__3_Glycerophosphoglycerophosphates(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1246,22 +1238,22 @@ class TestEx52__3_Glycerophosphoinositols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1273,7 +1265,7 @@ class TestEx52__3___mono_Glycerophosphoinositols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1284,7 +1276,7 @@ class TestEx52__3___bi_Glycerophosphoinositols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1295,7 +1287,7 @@ class TestEx52__3___tri_Glycerophosphoinositols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1308,18 +1300,18 @@ class TestEx53__3_Glycerophosphates(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1333,18 +1325,18 @@ class TestEx54__3_Glyceropyrophosphates(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1357,12 +1349,12 @@ class TestEx55__3_Glycerophosphoglycerophosphoglycerols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1376,18 +1368,18 @@ class TestEx56__3_Cdpglycerols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1401,18 +1393,18 @@ class TestEx57__3_Glycosylglycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1425,12 +1417,12 @@ class TestEx58__3_Glycosylglycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1443,12 +1435,12 @@ class TestEx59__3_Glycosylglycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1461,12 +1453,12 @@ class TestEx60__3_Glycosylglycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1479,12 +1471,12 @@ class TestEx61__3_Glycerophosphoinositolglycans(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
@@ -1498,16 +1490,16 @@ class TestEx62__3_Glycerophosphoinositolglycans(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1520,12 +1512,12 @@ class TestEx63__3_DiglycerolTetraetherPhospholipidsCaldarc(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1538,12 +1530,12 @@ class TestEx64__3_GlycerolnonitolTetraetherPhospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1557,18 +1549,18 @@ class TestEx65__3_OxidizedGlycerophospholipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1582,16 +1574,16 @@ class TestEx66__3_GlycerophosphoethanolamineGlycans(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1604,12 +1596,12 @@ class TestEx67__3_Dihydroxyacetonephospates(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
@@ -1622,12 +1614,12 @@ class TestEx68__3_Glycerophosphoethanols(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1641,18 +1633,18 @@ class TestEx69__3_Glycerophosphothreonines(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1664,7 +1656,7 @@ class TestEx71__3_OtherGlycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1676,12 +1668,12 @@ class TestEx72__3_OtherGlycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
@@ -1694,12 +1686,12 @@ class TestEx73__3_OtherGlycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1712,12 +1704,12 @@ class TestEx74__3_Glycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1731,18 +1723,18 @@ class TestEx75__3_Glycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1756,18 +1748,18 @@ class TestEx76__3_Glycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1781,17 +1773,17 @@ class TestEx77__3_Glycerolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
 
@@ -1803,12 +1795,12 @@ class TestEx78__3_Betaine(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1821,12 +1813,12 @@ class TestEx79__3_Phosphosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1840,18 +1832,18 @@ class TestEx80__3_Phosphosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1865,16 +1857,16 @@ class TestEx81__3_Phosphosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1889,22 +1881,22 @@ class TestEx82__3_NeutralGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1919,22 +1911,22 @@ class TestEx83__3_NeutralGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1949,22 +1941,22 @@ class TestEx84__3_AcidicGlycosphingolipids(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_chain(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_CHAIN)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_CHAIN)
         ref = LipidHeadValidator.get_inchi(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_inchi=ref))
 
     def test_sugar_variant_still_matches(self):
-        m = parse(self.VAR_SUGAR)
+        m = LipidAnalysis.parse_smiles(self.VAR_SUGAR)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
@@ -1977,12 +1969,12 @@ class TestEx85__3_OtherPolyketides(unittest.TestCase):
     def setUp(self): self.v = LipidHeadValidator()
 
     def test_positive(self):
-        m = parse(self.POS)
+        m = LipidAnalysis.parse_smiles(self.POS)
         self.assertTrue(self.v.matches_any_valid_head(m))
 
     def test_negative_stereo(self):
-        pos = parse(self.POS)
-        neg = parse(self.NEG_STEREO)
+        pos = LipidAnalysis.parse_smiles(self.POS)
+        neg = LipidAnalysis.parse_smiles(self.NEG_STEREO)
         ref = InChIParser.get_stereo_layer(pos)
         self.assertFalse(self.v.matches_any_valid_head(neg, reference_stereo_inchi=ref))
 
