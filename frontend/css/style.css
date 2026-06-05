@@ -156,7 +156,6 @@ body {
     min-height: calc(100vh - 57px);
 }
 
-/* Compare + Advanced: lock to viewport so molecule cards fill the screen */
 body.page-compare .container,
 body.page-advanced .container {
     height: calc(100vh - 57px);
@@ -982,8 +981,6 @@ input[type="checkbox"] {
     height: 10px;
 }
 
-/* ── MGF page ── */
-
 .mgf-toggle-row {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -1308,7 +1305,6 @@ input[type="checkbox"] {
     white-space: nowrap;
 }
 
-/* ── MGF download bar ── */
 .mgf-download-bar {
     display: flex;
     align-items: center;
