@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            var level = document.getElementById("mgf-level").value;
+            var layer = document.getElementById("mgf-layer").value;
 
             btn.disabled    = true;
             btn.textContent = "Comparing...";
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var formData = new FormData();
             formData.append("file1", mgfFile1Data);
             formData.append("file2", mgfFile2Data);
-            formData.append("level", level);
+            formData.append("layer", layer);
 
             fetch("http://127.0.0.1:5000/api/compare_mgf_files", {
                 method: "POST",
@@ -196,7 +196,7 @@ function renderResults(data) {
         noChanges.className = "mgf-empty-state";
         noChanges.innerHTML =
             "<div class='mgf-empty-icon' style='font-size:20px'>✓</div>" +
-            "<div class='mgf-empty-text'>No normalization needed — all InChIs are already equivalent at this identity level</div>";
+            "<div class='mgf-empty-text'>No normalization needed — all InChIs are already equivalent at this identity layer</div>";
         container.appendChild(noChanges);
     }
 }

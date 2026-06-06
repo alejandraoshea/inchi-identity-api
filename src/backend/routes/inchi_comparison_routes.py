@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from backend.inchi.determine_levels_id import InChI
 from backend.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
-from backend.inchi.config_loader import load_config, build_config_from_levels
+from backend.inchi.config_loader import load_config, build_config_from_layers
 import tempfile, traceback, os, base64
 from dotenv import load_dotenv
 
@@ -47,7 +47,7 @@ def compare_inchis_custom():
         
         input1 = data.get("inchi1", "").strip()
         input2 = data.get("inchi2", "").strip()
-        selected_levels = data.get("levels", [])
+        selected_layers = data.get("layers", [])
         
         if not input1 or not input2:
             return jsonify({"message": "Missing InChIs"}), 400
@@ -56,7 +56,7 @@ def compare_inchis_custom():
         inchi2 = InChI.normalize_input(input2)
         
         base_config = load_config()
-        config = build_config_from_levels(selected_levels, base_config)
+        config = build_config_from_layers(selected_layers, base_config)
         result = compare_pair(inchi1, inchi2, config)
         
         return jsonify({
@@ -69,8 +69,8 @@ def compare_inchis_custom():
         return jsonify({"message": str(e)}), 500
 
 
-@inchi_comparison_routes.route("/api/inchi_levels", methods=["GET"])
-def get_inchi_levels():
+@inchi_comparison_routes.route("/api/inchi_layers", methods=["GET"])
+def get_inchi_layers():
     return jsonify([
         {"key": "complete_identity",  "label": "Complete Identity"},
         {"key": "isotope",            "label": "Isotope Independence"},
@@ -107,7 +107,7 @@ def compare_mgf_files_upload():
 
         file1 = request.files["file1"]
         file2 = request.files["file2"]
-        level = request.form.get("level") or "COMPLETE_IDENTITY" 
+        layer = request.form.get("layer") or "COMPLETE_IDENTITY" 
 
         original_name1 = file1.filename or "file_a.mgf"
         original_name2 = file2.filename or "file_b.mgf"
@@ -123,7 +123,7 @@ def compare_mgf_files_upload():
         output_tmp = tempfile.mktemp(suffix=".mgf")
 
         config = load_config()
-        result = compare_mgf_files(tmp1_path, tmp2_path, config, level=level, output_mgf=output_tmp)
+        result = compare_mgf_files(tmp1_path, tmp2_path, config, layer=layer, output_mgf=output_tmp)
 
         os.unlink(tmp1_path)
         os.unlink(tmp2_path)

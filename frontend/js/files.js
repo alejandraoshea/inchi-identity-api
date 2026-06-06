@@ -212,7 +212,7 @@ function buildCard(comparison, index, mode, mappedResults) {
     if (layersContainer.children.length === 0) {
         layersContainer.innerHTML =
             "<div class='layer' style='grid-column:1/-1;color:var(--muted);font-size:12px'>" +
-            "No matching identity levels</div>";
+            "No matching identity layers</div>";
     }
 
     return card;

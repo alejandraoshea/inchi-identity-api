@@ -337,23 +337,34 @@ class InChI:
     
     def run_inchitrust(mol, inchitrust_path):
         try:
+            import tempfile, os
             molblock = Chem.MolToMolBlock(mol)
-            process = subprocess.run(
-                [inchitrust_path, "/STDIO"],
-                input=molblock,
-                text=True,
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.mol', delete=False, encoding='utf-8') as f:
+                f.write(molblock)
+                tmp_path = f.name
+            
+            result = subprocess.run(
+                [inchitrust_path, tmp_path, "-", "/AuxNone", "/NoLabels", "/NoWarnings"],
                 capture_output=True,
-                check=True
+                text=True,
+                encoding="utf-8"
             )
-
-            output = process.stdout.strip()
-            return output
-
+            os.unlink(tmp_path)
+            
+            output = "\n".join(
+                line for line in result.stdout.splitlines()
+                if line.startswith("InChI=")
+            )
+            return output if output else None
+            
         except Exception as e:
             print(f"InChI Trust execution failed: {e}")
             return None
         
     def areEqualTautomers(inchi1: str, inchi2: str, inchitrust_path=None) -> bool:
+        if inchitrust_path is None:
+            inchitrust_path = os.environ.get("INCHITRUST_PATH")
+
         inchi1 = InChI.normalize_input(inchi1)
         inchi2 = InChI.normalize_input(inchi2)
         inchi1 = InChIParser.removeIsotopicLayers(inchi1)
@@ -369,14 +380,20 @@ class InChI:
         mol1 = InChI.neutralize_molecule(mol1)
         mol2 = InChI.neutralize_molecule(mol2)
 
+        if inchitrust_path:
+            canon_inchi1 = InChI.run_inchitrust(mol1, inchitrust_path)
+            canon_inchi2 = InChI.run_inchitrust(mol2, inchitrust_path)
+            if canon_inchi1 is not None and canon_inchi2 is not None:
+                return canon_inchi1 == canon_inchi2
+        
+        # fallback to RDKit
         enumerator = rdMolStandardize.TautomerEnumerator()
         canon1 = enumerator.Canonicalize(mol1)
         canon2 = enumerator.Canonicalize(mol2)
-
         sig1 = Chem.MolToSmiles(canon1, canonical=True, isomericSmiles=False)
         sig2 = Chem.MolToSmiles(canon2, canonical=True, isomericSmiles=False)
         return sig1 == sig2
-    
+
 
     @staticmethod
     def areEqualSubstituentIndependent(inchi1: str, inchi2: str) -> bool:

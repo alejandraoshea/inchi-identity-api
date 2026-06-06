@@ -10,8 +10,6 @@ var layerLabels = {
     tautomer:          "Tautomer Independence",
 };
 
-/* ── Compare ──────────────────────────────────────────────────────────────── */
-
 function compare(isAdvanced) {
     isAdvanced = !!isAdvanced;
     var inchi1 = val(isAdvanced ? "inchi1_adv" : "inchi1");
@@ -19,12 +17,12 @@ function compare(isAdvanced) {
     if (!inchi1 || !inchi2) { showToast("Please enter both InChIs", "error"); return; }
 
     if (isAdvanced) {
-        var selectedLevels = Array.from(
-            document.querySelectorAll(".level-checkbox:checked")
+        var selectedlayers = Array.from(
+            document.querySelectorAll(".layer-checkbox:checked")
         ).map(function(cb) { return cb.value; });
 
-        if (selectedLevels.length === 0) {
-            showLevelsError();
+        if (selectedlayers.length === 0) {
+            showlayersError();
             return;
         }
     }
@@ -35,8 +33,8 @@ function compare(isAdvanced) {
     var url  = isAdvanced ? API + "/compare_inchis_custom" : API + "/compare_inchis";
     var body = { inchi1: inchi1, inchi2: inchi2 };
     if (isAdvanced) {
-        body.levels = Array.from(
-            document.querySelectorAll(".level-checkbox:checked")
+        body.layers = Array.from(
+            document.querySelectorAll(".layer-checkbox:checked")
         ).map(function(cb) { return cb.value; });
     }
 
@@ -63,15 +61,12 @@ function compare(isAdvanced) {
     });
 }
 
-/* ── Levels error (toast + light shake on the checkboxes list) ───────────── */
-
-function showLevelsError() {
-    showToast("Select at least one identity level", "error");
+function showlayersError() {
+    showToast("Select at least one identity layer", "error");
 
     var layersEl = document.getElementById("layers-advanced");
     if (!layersEl) return;
 
-    /* Remove and re-add the class so the animation restarts on repeat clicks */
     layersEl.classList.remove("layers-shake");
     void layersEl.offsetWidth; /* force reflow */
     layersEl.classList.add("layers-shake");
@@ -81,8 +76,6 @@ function showLevelsError() {
         layersEl.removeEventListener("animationend", handler);
     });
 }
-
-/* ── Layers ───────────────────────────────────────────────────────────────── */
 
 function updateLayers(results, isAdvanced) {
     isAdvanced = !!isAdvanced;
@@ -102,7 +95,7 @@ function updateLayers(results, isAdvanced) {
 }
 
 function clearAdvancedSelection() {
-    document.querySelectorAll(".level-checkbox").forEach(function(cb) { cb.checked = false; });
+    document.querySelectorAll(".layer-checkbox").forEach(function(cb) { cb.checked = false; });
     document.querySelectorAll("#layers-advanced .layer").forEach(function(layer) {
         layer.style.display = "";
         layer.className = "layer";
@@ -123,55 +116,4 @@ function mapResults(raw) {
         double_bond:       raw.DOUBLE_BONDS_INDEPENDENCE             != null ? raw.DOUBLE_BONDS_INDEPENDENCE             : null,
         tautomer:          raw.TAUTOMER_INDEPENDENCE                 != null ? raw.TAUTOMER_INDEPENDENCE                 : null,
     };
-}
-
-/* ── UI utilities ─────────────────────────────────────────────────────────── */
-
-function showToast(message, type) {
-    type = type || "info";
-    var container = document.getElementById("toast-container");
-    if (!container) return;
-    var toast = document.createElement("div");
-    toast.classList.add("toast", "toast-" + type);
-    toast.textContent = message;
-    container.appendChild(toast);
-    setTimeout(function() {
-        toast.style.animation = "fadeOut 0.3s ease forwards";
-        setTimeout(function() { toast.remove(); }, 300);
-    }, 1800);
-}
-
-function setLoadingState(isLoading) {
-    var btn = document.querySelector("button[data-compare]");
-    if (btn) {
-        btn.disabled    = isLoading;
-        btn.textContent = isLoading ? "Comparing..." : "Compare";
-    }
-}
-
-function autoResizeTextarea(el) {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-}
-
-function initTextareas() {
-    document.querySelectorAll("textarea").forEach(function(ta) {
-        ta.addEventListener("input", function() { autoResizeTextarea(ta); });
-        autoResizeTextarea(ta);
-    });
-}
-
-function markActiveNav() {
-    // Files pages need body scroll; compare/advanced fit in the viewport
-    var FILES_PAGES = ["files.html", "files-pairwise.html", "files-cross.html"];
-    var page = location.pathname.split("/").pop();
-    document.body.classList.toggle("allow-scroll", FILES_PAGES.indexOf(page) !== -1);
-    document.querySelectorAll(".nav a, .dropdown-menu a").forEach(function(a) {
-        a.classList.toggle("active", a.getAttribute("href") === page);
-    });
-}
-
-function val(id) {
-    var el = document.getElementById(id);
-    return el ? el.value.trim() : "";
 }

@@ -14,7 +14,10 @@ function showToast(message, type) {
 
 function setLoadingState(isLoading) {
     var btn = document.querySelector("button[data-compare]");
-    if (btn) { btn.disabled = isLoading; btn.textContent = isLoading ? "Comparing..." : "Compare"; }
+    if (btn) {
+        btn.disabled    = isLoading;
+        btn.textContent = isLoading ? "Comparing..." : "Compare";
+    }
 }
 
 function autoResizeTextarea(el) {
@@ -30,10 +33,15 @@ function initTextareas() {
 }
 
 function markActiveNav() {
+    var FILES_PAGES = ["files.html", "files-pairwise.html", "files-cross.html"];
     var page = location.pathname.split("/").pop();
+    document.body.classList.toggle("allow-scroll", FILES_PAGES.indexOf(page) !== -1);
     document.querySelectorAll(".nav a, .dropdown-menu a").forEach(function(a) {
         a.classList.toggle("active", a.getAttribute("href") === page);
     });
-    var FILE_PAGES = ["text_files.html", "mgf_files.html"];
-    document.body.classList.toggle("allow-scroll", FILE_PAGES.indexOf(page) !== -1);
+}
+
+function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : "";
 }

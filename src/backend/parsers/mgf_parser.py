@@ -77,12 +77,12 @@ class UnificationChange:
 
 class SimpleMgfDeduplicator:
 
-    def __init__(self, level: str = "COMPLETE_IDENTITY", config: dict = None):
-        self.level = level
+    def __init__(self, layer: str = "COMPLETE_IDENTITY", config: dict = None):
+        self.layer = layer
         self.config = config
         self.changes_log: List[UnificationChange] = []
 
-        self.level_map = {
+        self.layer_map = {
             "COMPLETE_IDENTITY": InchiLayers.COMPLETE_IDENTITY,
             "ISOTOPIC_INDEPENDENCE": InchiLayers.ISOTOPIC_INDEPENDENCE,
             "SALTS_INDEPENDENCE": InchiLayers.SALTS_INDEPENDENCE,
@@ -155,17 +155,17 @@ class SimpleMgfDeduplicator:
             except:
                 return inchi
 
-        if self.level == "COMPLETE_IDENTITY":
+        if self.layer == "COMPLETE_IDENTITY":
             return inchi
 
-        if self.level == "ISOTOPIC_INDEPENDENCE":
+        if self.layer == "ISOTOPIC_INDEPENDENCE":
             try:
                 return InChIParser.removeIsotopicLayers(inchi)
             except Exception as e:
                 return inchi
 
         try:
-            if self.level == "SALTS_INDEPENDENCE":
+            if self.layer == "SALTS_INDEPENDENCE":
                 inchi = InChIParser.removeIsotopicLayers(inchi)
                 mol = InChI.mol_from_inchi(inchi)
                 if mol is None:
@@ -177,7 +177,7 @@ class SimpleMgfDeduplicator:
                 
                 return Chem.MolToInchi(mol_main)
 
-            if self.level == "CHARGES_INDEPENDENCE":
+            if self.layer == "CHARGES_INDEPENDENCE":
                 inchi = InChIParser.removeIsotopicLayers(inchi)
                 mol = InChI.mol_from_inchi(inchi)
                 if mol is None:
@@ -201,7 +201,7 @@ class SimpleMgfDeduplicator:
                 else:
                     return inchi_temp
 
-            if self.level == "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE":
+            if self.layer == "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE":
                 inchi = InChIParser.removeIsotopicLayers(inchi)
                 mol = InChI.mol_from_inchi(inchi)
                 if mol is None:
@@ -213,7 +213,7 @@ class SimpleMgfDeduplicator:
 
                 return Chem.MolToInchi(mol)
 
-            if self.level == "DOUBLE_BONDS_INDEPENDENCE":
+            if self.layer == "DOUBLE_BONDS_INDEPENDENCE":
                 inchi = InChIParser.removeIsotopicLayers(inchi)
                 mol = InChI.mol_from_inchi(inchi)
                 if mol is None:
@@ -225,7 +225,7 @@ class SimpleMgfDeduplicator:
 
                 return Chem.MolToInchi(mol)
 
-            if self.level == "TAUTOMER_INDEPENDENCE":
+            if self.layer == "TAUTOMER_INDEPENDENCE":
                 inchi = InChIParser.removeIsotopicLayers(inchi)
                 mol = InChI.mol_from_inchi(inchi)
                 if mol is None:
@@ -240,7 +240,7 @@ class SimpleMgfDeduplicator:
                 return Chem.MolToInchi(mol)
 
         except Exception as e:
-            print(f"Warning: Could not get canonical form at level {self.level}: {e}")
+            print(f"Warning: Could not get canonical form at layer {self.layer}: {e}")
             return inchi
 
         return inchi
@@ -289,7 +289,7 @@ class SimpleMgfDeduplicator:
         canonical1 = self.get_canonical_form(struct1)
         canonical2 = self.get_canonical_form(struct2)
 
-        if self.level == "COMPLETE_IDENTITY":
+        if self.layer == "COMPLETE_IDENTITY":
             return canonical1 == canonical2
 
         if not self.config:
@@ -297,10 +297,10 @@ class SimpleMgfDeduplicator:
 
         try:
             comparison = InChI.get_ids(canonical1, canonical2, self.config)
-            level_enum = self.level_map.get(self.level, InchiLayers.COMPLETE_IDENTITY)
-            return comparison.get(level_enum, False)
+            layer_enum = self.layer_map.get(self.layer, InchiLayers.COMPLETE_IDENTITY)
+            return comparison.get(layer_enum, False)
         except Exception as e:
-            print(f"Error comparing structures at level {self.level}: {e}")
+            print(f"Error comparing structures at layer {self.layer}: {e}")
             return canonical1 == canonical2
 
     def unify_inchis_in_file(self, entries: List[Dict], source_file: str) -> List[Dict]:
@@ -408,7 +408,7 @@ class SimpleMgfDeduplicator:
 
     def write_log(self, output_path: str):
         log_data = {
-            "level": self.level,
+            "layer": self.layer,
             "total_changes": len(self.changes_log),
             "changes": [asdict(change) for change in self.changes_log]
         }
@@ -456,5 +456,5 @@ class SimpleMgfDeduplicator:
                 f"{source_b}_to_{source_a}": changes_cross
             },
             "changes_log": [asdict(change) for change in self.changes_log],
-            "level": self.level
+            "layer": self.layer
         }
