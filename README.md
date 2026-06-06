@@ -27,6 +27,7 @@ Developed as part of a TFG at CEMBIO (Universidad San Pablo CEU).
 ## Installation
 
 RDKit must be installed via conda:
+RDKit must be installed via conda:
 
 ```bash
 git clone https://github.com/alejandraoshea/inchi-identity-api.git
