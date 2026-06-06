@@ -29,7 +29,7 @@ RDKit must be installed via conda:
 ```bash
 git clone https://github.com/alejandraoshea/identity-levels-inchi.git
 cd identity-levels-inchi
-conda env create -f environment.yml
+conda env create -f conda_env.yml
 conda activate inchi-identity
 pip install -e .
 ```
