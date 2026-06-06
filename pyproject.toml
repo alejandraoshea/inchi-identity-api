@@ -1,29 +1,24 @@
 [project]
-name = "identity-levels-inchi"
+name = "inchi-identity-api"
 version = "0.1.0"
-description = "InChI identity comparison across multiple chemical abstraction levels"
+description = "Flask REST API for the InChI Identity hierarchical molecular comparison framework"
 readme = "README.md"
 requires-python = ">=3.10"
+authors = [
+    { name = "Alejandra O'Shea", email = "alejandraosheafdez@gmail.com" }
+]
 
 dependencies = [
     "numpy",
     "pandas",
     "requests",
+    "openpyxl",
+    "python-dotenv",
     "flask",
     "flask-cors",
-    "python-dotenv",
     "pillow",
     "py3Dmol",
-    "playwright",
-    "selenium"
 ]
-
-authors = [
-    { name = "alejandraoshea", email = "alejandraosheafdez@gmail.com" }
-]
-
-[project.scripts]
-inchi = "backend.cli.cli:main"
 
 [build-system]
 requires = ["hatchling"]

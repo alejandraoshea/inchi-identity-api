@@ -1,155 +1,99 @@
-# 🧪 InChI Multi-Layer Comparison Tool
+# InChI Identity API
 
-A cheminformatics framework for **advanced comparison of chemical compounds** using hierarchical normalization of InChI representations.
+Flask-based REST API exposing the [InChI Identity](https://github.com/alejandraoshea/identity-levels-inchi) 
+hierarchical molecular comparison framework for interactive and programmatic use.
 
-This tool goes beyond exact string matching by evaluating molecular identity across multiple chemically meaningful layers, making it especially useful for **metabolomics, lipidomics, and chemical database integration**.
+Any system capable of making HTTP requests can submit molecular identifiers, retrieve 
+equivalence profiles, and trigger MGF spectral library unification — independently of 
+the web frontend.
 
----
-
-## Features
-
-- Multi-layer molecular comparison
-- Intelligent normalization pipeline:
-  - isotope removal
-  - salt stripping
-  - charge neutralization
-  - stereochemistry abstraction
-  - tautomer canonicalization
-  - lipid-aware comparison logic (tail-based analysis)
-- Command-Line Interface (CLI) for batch processing
-- Web interface for interactive exploration (Flask)
-- Supports `.txt` and `.mgf` metabolomics files 
+Developed as part of a TFG at CEMBIO (Universidad San Pablo CEU).
 
 ---
 
-## Comparison Layers
+## Endpoints
 
-- Complete Identity
-- Isotope Independence
-- Salt Independence
-- Charge Independence
-- Stereochemistry Independence
-- Double Bond Position Independence
-- Tautomer Independence (via InChI Trust)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/inchi_levels` | List all available identity layers |
+| POST | `/api/compare_inchis` | Full hierarchical comparison across all layers |
+| POST | `/api/compare_inchis_custom` | Comparison restricted to selected layers |
+| POST | `/api/compare_files` | Pairwise or cross-comparison of identifier files |
+| POST | `/api/compare_mgf_files` | MGF spectral library unification |
+| POST | `/api/generate_3d` | Generate 3D SDF structure from InChI or SMILES |
 
 ---
 
 ## Installation
-This project uses a Conda environment (recommended) with additional Python dependencies installed via pip.
 
-
-### 1. Clone the repository
+RDKit must be installed via conda:
 
 ```bash
-git clone https://github.com/alejandraoshea/identity-levels-inchi.git
-cd identity-levels-inchi
+git clone https://github.com/alejandraoshea/inchi-identity-api.git
+cd inchi-identity-api
+conda env create -f environment.yml
+conda activate inchi-identity-api
+pip install -e .
 ```
 
-### 2. Create and activate the conda environment
+### InChI Trust (optional, for Layer 6)
 
 ```bash
-conda env create -f conda_env.yml
-conda activate id-levels
+export INCHITRUST_PATH=/path/to/inchi-1
 ```
 
-### 3. Install Chromium
+If not available, Layer 6 falls back to RDKit's TautomerEnumerator automatically.
+
+---
+
+## Running
 
 ```bash
-playwright install chromium
+python src/backend/app.py
 ```
 
-### 4. Install project (CLI)
+The API will be available at `http://localhost:5000`.
+
+---
+
+## Example requests
+
+### Full comparison
+
 ```bash
-pip install .
+curl -X POST http://localhost:5000/api/compare_inchis \
+  -H "Content-Type: application/json" \
+  -d '{"inchi1": "InChI=1S/C5H11NO2/...", "inchi2": "InChI=1S/C5H11NO2/..."}'
 ```
 
-### 5. Verify CLI
+### Selected layers only
+
 ```bash
-inchi --help
+curl -X POST http://localhost:5000/api/compare_inchis_custom \
+  -H "Content-Type: application/json" \
+  -d '{"inchi1": "...", "inchi2": "...", "levels": ["isotope", "salt", "charge"]}'
 ```
 
-### Requirements
-1. Download InChI Trust (Required for Tautomer Layer)
-- Download from: https://www.inchi-trust.org/downloads/
-Then either:
-- Option A: Add to PATH:
+### MGF unification
+
 ```bash
-    export PATH=$PATH:/path/to/inchi
+curl -X POST http://localhost:5000/api/compare_mgf_files \
+  -F "file1=@file1.mgf" \
+  -F "file2=@file2.mgf" \
+  -F "layer=CHARGES_INDEPENDENCE"
 ```
 
-- Option B: Pass manually in CLI
-```bash
---inchitrust /path/to/inchi-1
-```
+---
 
-### CLI Usage
-1. Compare two InChIs directly
-```bash
-inchi compare-pair "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1" "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+" > src/backend/output/result1.json
-```
+## CORS
 
-2. Compare two InChIs with selected layers
-```bash
-inchi compare-pair-layers "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1" "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+" --layers isotope salt charge > src/backend/output/result2.json
-```
+CORS is enabled by default to allow the frontend to connect from any origin during 
+development. For production, restrict allowed origins in `app.py`.
 
-3. Compare two text files (pairwise)
-```bash
-inchi compare file1.txt file2.txt > src/backend/output/result_pairwise.json
-```
+---
 
-4. Cross comparison (all from file 1 with all from file 2)
-```bash
-inchi compare file1.txt file2.txt --mode cross > src/backend/output/result_cross.json
-```
+## Related repositories
 
-5. Show only true values when comparing .txt files
-```bash
-inchi compare file1.txt file2.txt --only-equal > src/backend/output/result_pairwise_true.json
-inchi compare file1.txt file2.txt --mode cross --only-equal > src/backend/output/result_cross_true.json
-```
+- [inchi-identity](https://github.com/alejandraoshea/identity-levels-inchi) — Python comparison engine and CLI
+- [inchi-identity-app](https://github.com/alejandraoshea/inchi-identity-app) — Web frontend
 
-6. Compare two mgf files
-```bash
-inchi compare-mgf test_file1.mgf test_file2.mgf --layer COMPLETE_IDENTITY
-```
-The user can select the layer of identity, and if not specified, the default layer is COMPLETE_IDENTITY. In addition, --output-mgf is used to specify the name of the output file and --output-log for the name of the log file.
-
-Case 1: InChI 
-```bash
-inchi compare-mgf test_file1.mgf test_file2.mgf --layer COMPLETE_IDENTITY --output-mgf unified.mgf --output-log unified_log.json
-inchi compare-mgf test_protonation_file1.mgf test_protonation_file2.mgf --layer CHARGES_INDEPENDENCE --output-mgf unified.mgf --output-log unified_log.json
-```
-
-Case 2: SMILES
-```bash
-inchi compare-mgf test_smiles_file1.mgf test_smiles_file2.mgf --layer COMPLETE_IDENTITY --output-mgf unified_smiles.mgf --output-log unified_log_smiles.json                   
-inchi compare-mgf test_smiles_file1.mgf test_smiles_file2.mgf --layer CHARGES_INDEPENDENCE --output-mgf unified_smiles_charges.mgf --output-log unified_log_smiles_charges.json
-```
-
-
-### Example Input
-```bash
-InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1
-InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+
-```
-
-### Example Output
-```bash
-    {
-        "inchi_1": "InChI=1S/C5H11NO2/c1-6(2,3)4-5(7)8/h4H2,1-3H3/p+1",
-        "inchi_2": "InChI=1S/C18H34O2/c1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18(19)20/h8-9H,2-7,10-17H2,1H3,(H,19,20)/b9-8+",
-        "results": {
-            "COMPLETE_IDENTITY": false,
-            "ISOTOPIC_INDEPENDENCE": false,
-            "SALTS_INDEPENDENCE": false,
-            "CHARGES_INDEPENDENCE": false,
-            "DOUBLE_BONDS_INDEPENDENCE": false,
-            "STEREOCHEMICAL_CIS_TRANS_INDEPENDENCE": false,
-            "TAUTOMER_INDEPENDENCE": true,
-        }
-    }
-```
-
-### Author
-Alejandra O'Shea Fernández
