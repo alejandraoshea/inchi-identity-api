@@ -60,19 +60,5 @@ class TestInChI(unittest.TestCase):
         self.assertTrue(InChIParser.getReconnectedLayer("InChI=1S/C2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1/rC2H6O.Na/c1-2-3;/h3H,2H2,1H3;/q;+1").startswith("r"))
         self.assertIsNone(InChIParser.getReconnectedLayer("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"))
 
-    """def test_carboxylate_neutralization_connectivity(self):
-        inchi = "InChI=1S/C2H3O2/c1-2(3)4/h1H3/q-1"
-
-        mol = Chem.MolFromInchi(inchi)
-        self.assertIsNotNone(mol)
-
-        neutral = InChIParser.neutralize_molecule(mol)
-        neutral_inchi = Chem.MolToInchi(neutral)
-
-        self.assertEqual(
-            InChIParser.getAtomConnectionsSublayer(inchi),
-            InChIParser.getAtomConnectionsSublayer(neutral_inchi),
-        )"""
-
 if __name__ == "__main__":
     unittest.main()
