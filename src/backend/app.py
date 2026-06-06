@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
-from inchi.compare import compare_text_files, compare_pair
-from inchi.determine_levels_id import InChI
+from backend.inchi.compare import compare_text_files, compare_pair
+from backend.inchi.determine_levels_id import InChI
 from backend.inchi.config_loader import load_config
 from backend.routes.inchi_comparison_routes import inchi_comparison_routes
 from backend.routes.generation_3d_routes import generation_3d_routes

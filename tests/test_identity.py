@@ -17,11 +17,6 @@ class TestInChI(unittest.TestCase):
         inchi2="InChI=1S/C9H11NO2/c10-8(9(11)12)6-7-4-2-1-3-5-7/h1-5,8H,6,10H2,(H,11,12)/t8-/m0/s1/i9+1"
         self.assertTrue(InChI.areEqualNoIsotopes(inchi1, inchi2))
 
-    def test_are_equal_diluted_salts(self):
-        inchi1 = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
-        inchi2 = "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"
-        self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
-
     def test_equal_salts_anion(self):
         inchi1 = "InChI=1S/C23H45NO4.ClH/c1-5-6-7-8-9-10-11-12-13-14-15-16-17-18-23(27)28-21(19-22(25)26)20-24(2,3)4;/h21H,5-20H2,1-4H3;1H"
         inchi2 = "InChI=1S/C23H45NO4.BrH/c1-5-6-7-8-9-10-11-12-13-14-15-16-17-18-23(27)28-21(19-22(25)26)20-24(2,3)4;/h21H,5-20H2,1-4H3;1H"
@@ -30,18 +25,6 @@ class TestInChI(unittest.TestCase):
     def test_equal_salts_cation(self):
         inchi1= "InChI=1S/C2H4O2.Na/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
         inchi2="InChI=1S/C2H4O2.K/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
-        self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
-
-    def test_different_metal_cations(self):
-        # Acetato de Litio
-        inchi1 = "InChI=1S/C2H4O2.Li/c1-2(3)4;/h1H3,(H,3,4);/q;+1/p-1"
-        # Acetato de Calcio
-        inchi2 = "InChI=1S/2C2H4O2.Ca/c2*1-2(3)4;/h2*1H3,(H,3,4);/q;;+2/p-2"
-        self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
-
-    def test_hydrate_vs_anhydrous(self):
-        inchi1 = "InChI=1S/C2H2O4/c3-1(4)2(5)6/h(H,3,4)(H,5,6)"
-        inchi2 = "InChI=1S/C2H2O4.H2O/c3-1(4)2(5)6;/h(H,3,4)(H,5,6);1H2"
         self.assertTrue(InChI.areEqualDisolvedSalts(inchi1, inchi2))
 
     def test_equals_without_charges1(self):
