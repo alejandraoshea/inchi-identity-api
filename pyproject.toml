@@ -18,6 +18,7 @@ dependencies = [
     "flask-cors",
     "pillow",
     "py3Dmol",
+    "inchi-identity",
 ]
 
 [build-system]
