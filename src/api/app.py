@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
-from backend.routes.inchi_comparison_routes import inchi_comparison_routes
-from backend.routes.generation_3d_routes import generation_3d_routes
+from api.routes.inchi_comparison_routes import inchi_comparison_routes
+from api.routes.generation_3d_routes import generation_3d_routes
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
