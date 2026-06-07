@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
-from backend.inchi.determine_levels_id import InChI
-from backend.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
-from backend.inchi.config_loader import load_config, build_config_from_layers
+from inchi_identity.inchi.determine_levels_id import InChI
+from inchi_identity.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
+from inchi_identity.inchi.config_loader import load_config, build_config_from_layers
 import tempfile, traceback, os, base64
 from dotenv import load_dotenv
 

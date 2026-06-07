@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from backend.inchi.smiles_pattern import SmilesCorrector
+from inchi_identity.inchi.smiles_pattern import SmilesCorrector
 from dotenv import load_dotenv
 
 load_dotenv()
