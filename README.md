@@ -15,7 +15,7 @@ Developed as part of a TFG at CEMBIO (Universidad San Pablo CEU).
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/inchi_levels` | List all available identity layers |
+| GET | `/api/inchi_layers` | List all available identity layers |
 | POST | `/api/compare_inchis` | Full hierarchical comparison across all layers |
 | POST | `/api/compare_inchis_custom` | Comparison restricted to selected layers |
 | POST | `/api/compare_files` | Pairwise or cross-comparison of identifier files |
@@ -27,12 +27,11 @@ Developed as part of a TFG at CEMBIO (Universidad San Pablo CEU).
 ## Installation
 
 RDKit must be installed via conda:
-RDKit must be installed via conda:
 
 ```bash
 git clone https://github.com/alejandraoshea/inchi-identity-api.git
 cd inchi-identity-api
-conda env create -f environment.yml
+conda env create -f conda_env.yml
 conda activate inchi-identity-api
 pip install -e .
 ```
@@ -50,10 +49,10 @@ If not available, Layer 6 falls back to RDKit's TautomerEnumerator automatically
 ## Running
 
 ```bash
-python src/backend/app.py
+flask --app src/api/app.py run --port 8080
 ```
 
-The API will be available at `http://localhost:5000`.
+The API will be available at `http://localhost:8080`.
 
 ---
 
@@ -62,7 +61,7 @@ The API will be available at `http://localhost:5000`.
 ### Full comparison
 
 ```bash
-curl -X POST http://localhost:5000/api/compare_inchis \
+curl -X POST http://localhost:8080/api/compare_inchis \
   -H "Content-Type: application/json" \
   -d '{"inchi1": "InChI=1S/C5H11NO2/...", "inchi2": "InChI=1S/C5H11NO2/..."}'
 ```
@@ -70,7 +69,7 @@ curl -X POST http://localhost:5000/api/compare_inchis \
 ### Selected layers only
 
 ```bash
-curl -X POST http://localhost:5000/api/compare_inchis_custom \
+curl -X POST http://localhost:8080/api/compare_inchis_custom \
   -H "Content-Type: application/json" \
   -d '{"inchi1": "...", "inchi2": "...", "levels": ["isotope", "salt", "charge"]}'
 ```
@@ -78,7 +77,7 @@ curl -X POST http://localhost:5000/api/compare_inchis_custom \
 ### MGF unification
 
 ```bash
-curl -X POST http://localhost:5000/api/compare_mgf_files \
+curl -X POST http://localhost:8080/api/compare_mgf_files \
   -F "file1=@file1.mgf" \
   -F "file2=@file2.mgf" \
   -F "layer=CHARGES_INDEPENDENCE"
@@ -97,4 +96,3 @@ development. For production, restrict allowed origins in `app.py`.
 
 - [inchi-identity](https://github.com/alejandraoshea/identity-levels-inchi) — Python comparison engine and CLI
 - [inchi-identity-app](https://github.com/alejandraoshea/inchi-identity-app) — Web frontend
-
