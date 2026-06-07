@@ -65,15 +65,24 @@ def compare_text_files(list1, list2, config, mode="pairwise", only_equal=False):
             correction = SmilesCorrector.auto_correct(i1)
             if correction["parse_result"] != "error":
                 i1 = correction["corrected"]
-        
+
         if not i2.startswith("InChI="):
             correction = SmilesCorrector.auto_correct(i2)
             if correction["parse_result"] != "error":
                 i2 = correction["corrected"]
-        
+
         i1 = InChI.normalize_input(i1)
         i2 = InChI.normalize_input(i2)
-        
+
+        if not i1.startswith("InChI=") or not i2.startswith("InChI="):
+            failed = i1 if not i1.startswith("InChI=") else i2
+            return {
+                "inchi_1": i1,
+                "inchi_2": i2,
+                "error": f"Could not convert to InChI: {failed}",
+                "results": {},
+            }
+
         comparison = InChI.get_ids(i1, i2, config)
 
         if only_equal:

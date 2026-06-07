@@ -49,15 +49,31 @@ class SmilesCorrector:
         except Exception as e:
             pass
         
-        # Strategy 5: Try SMILES canonicalization
+        # Strategy 5: Fix hypervalent atoms then InChI roundtrip.
+        # Handles sloppy SMILES like betaine CN(C)(C)CC(=O)O where N has 4 bonds
+        # but no explicit charge — we infer the charge from excess bond order so
+        # the full sanitization and InChI generation capture the right charge layers.
         try:
+            _NEUTRAL_VALENCE = {6: 4, 7: 3, 8: 2, 16: 2, 15: 3}
             mol = Chem.MolFromSmiles(smiles, sanitize=False)
             if mol is not None:
+                rw = Chem.RWMol(mol)
+                for atom in rw.GetAtoms():
+                    an = atom.GetAtomicNum()
+                    nv = _NEUTRAL_VALENCE.get(an)
+                    if nv is not None and atom.GetFormalCharge() == 0:
+                        bond_order = int(sum(b.GetBondTypeAsDouble() for b in atom.GetBonds()))
+                        bond_order += atom.GetNumExplicitHs()
+                        excess = bond_order - nv
+                        if excess > 0:
+                            atom.SetFormalCharge(excess)
+                mol = rw.GetMol()
+                Chem.SanitizeMol(mol)
                 inchi = Chem.MolToInchi(mol)
                 if inchi:
                     mol_from_inchi = Chem.MolFromInchi(inchi)
                     if mol_from_inchi is not None:
-                        return mol_from_inchi, "inchi_roundtrip", None
+                        return mol_from_inchi, "hypervalent_fix_inchi_roundtrip", None
         except Exception as e:
             pass
         

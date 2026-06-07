@@ -34,37 +34,74 @@ class InChI:
             print(f"RDKit conversion failed for InChI: {inchi}\nError: {e}")
             return None
     
+    # Default neutral valence for common atoms (no formal charge).
+    _NEUTRAL_VALENCE = {6: 4, 7: 3, 8: 2, 16: 2, 15: 3}
+
+    @staticmethod
+    def _fix_hypervalent_atoms(mol):
+        """Add formal charges to atoms whose explicit bond order exceeds their
+        neutral valence, e.g. betaine N with 4 bonds gets formal charge +1."""
+        rw = Chem.RWMol(mol)
+        changed = False
+        for atom in rw.GetAtoms():
+            an = atom.GetAtomicNum()
+            nv = InChI._NEUTRAL_VALENCE.get(an)
+            if nv is not None and atom.GetFormalCharge() == 0:
+                bond_order = int(sum(b.GetBondTypeAsDouble() for b in atom.GetBonds()))
+                bond_order += atom.GetNumExplicitHs()
+                excess = bond_order - nv
+                if excess > 0:
+                    atom.SetFormalCharge(excess)
+                    changed = True
+        return rw.GetMol() if changed else mol
+
     @staticmethod
     def normalize_input(structure: str) -> str:
         if not structure:
             return structure
-        
+
         structure = structure.strip()
-        
+
         if structure.startswith("InChI="):
             return structure
-        
+
+        mol = None
+
+        # Try 1: standard sanitization
         try:
             mol = Chem.MolFromSmiles(structure, sanitize=True)
-            
-            if mol is None:
-                return structure
-            
-            Chem.SanitizeMol(mol)
+        except Exception:
+            pass
+
+        # Try 2: parse without sanitization, add formal charges to hypervalent
+        # atoms (e.g. betaine CN(C)(C)CC(=O)O where N has 4 bonds but no charge),
+        # then fully sanitize so MolToInchi produces the correct charge layers.
+        if mol is None:
+            try:
+                tmp = Chem.MolFromSmiles(structure, sanitize=False)
+                if tmp is not None:
+                    tmp = InChI._fix_hypervalent_atoms(tmp)
+                    Chem.SanitizeMol(tmp)
+                    mol = tmp
+            except Exception:
+                pass
+
+        if mol is None:
+            return structure
+
+        try:
             Chem.AssignStereochemistry(mol, cleanIt=True, force=True)
-            
+        except Exception:
+            pass
+
+        try:
             inchi_result = Chem.MolToInchi(mol)
             if inchi_result:
                 return inchi_result.strip()
-            else:
-                print(f"InChI generation failed for valid SMILES: {structure}")
-                return structure
-                
-        except Exception as e:
-            print(f"\Error during SMILES→InChI conversion:")
-            print(f"    Input: {structure}")
-            print(f"    Error: {e}")
-            return structure
+        except Exception:
+            pass
+
+        return structure
 
 
     def areEqualNoIsotopes(inchi1: str, inchi2: str) -> bool:
