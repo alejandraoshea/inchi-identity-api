@@ -6,6 +6,7 @@ hierarchical molecular comparison framework for interactive and programmatic use
 Any system capable of making HTTP requests can submit molecular identifiers, retrieve 
 equivalence profiles, and trigger MGF spectral library unification — independently of 
 the web frontend.
+
 ---
 
 ## Endpoints
@@ -23,11 +24,17 @@ the web frontend.
 
 ## Installation
 
-RDKit must be installed via conda:
+### Option A — pip (recommended)
 
 ```bash
 git clone https://github.com/alejandraoshea/inchi-identity-api.git
 cd inchi-identity-api
+pip install -r requirements.txt
+```
+
+### Option B — conda (alternative)
+
+```bash
 conda env create -f conda_env.yml
 conda activate inchi-identity-api
 pip install -e .
@@ -46,10 +53,56 @@ If not available, Layer 6 falls back to RDKit's TautomerEnumerator automatically
 ## Running
 
 ```bash
-flask --app src/backend/app.py run --port 8080
+cd src
+python3 -m backend.app
 ```
 
-The API will be available at `http://localhost:8080`.
+The API will be available at `http://localhost:5000`.
+
+---
+
+## Deployment with Nginx (WSL2)
+
+To serve the frontend via Nginx while running the API locally on WSL2:
+
+1. Install and start Nginx inside WSL2:
+
+```bash
+sudo apt install nginx -y
+sudo service nginx start
+```
+
+2. Configure Nginx as a reverse proxy in `/etc/nginx/sites-available/default`:
+
+```nginx
+root /var/www/html;
+index pages/compare.html;
+
+location / {
+    try_files $uri $uri/ /pages/compare.html;
+}
+
+location /api/ {
+    proxy_pass http://127.0.0.1:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+```
+
+3. Reload Nginx:
+
+```bash
+sudo nginx -t && sudo service nginx reload
+```
+
+4. Start the API:
+
+```bash
+cd src
+python3 -m backend.app
+```
+
+The frontend will be available at `http://localhost` and all `/api/` requests will be proxied to Flask.
 
 ---
 
@@ -58,7 +111,7 @@ The API will be available at `http://localhost:8080`.
 ### Full comparison
 
 ```bash
-curl -X POST http://localhost:8080/api/compare_inchis \
+curl -X POST http://localhost:5000/api/compare_inchis \
   -H "Content-Type: application/json" \
   -d '{"inchi1": "InChI=1S/C5H11NO2/...", "inchi2": "InChI=1S/C5H11NO2/..."}'
 ```
@@ -66,7 +119,7 @@ curl -X POST http://localhost:8080/api/compare_inchis \
 ### Selected layers only
 
 ```bash
-curl -X POST http://localhost:8080/api/compare_inchis_custom \
+curl -X POST http://localhost:5000/api/compare_inchis_custom \
   -H "Content-Type: application/json" \
   -d '{"inchi1": "...", "inchi2": "...", "levels": ["isotope", "salt", "charge"]}'
 ```
@@ -74,7 +127,7 @@ curl -X POST http://localhost:8080/api/compare_inchis_custom \
 ### MGF unification
 
 ```bash
-curl -X POST http://localhost:8080/api/compare_mgf_files \
+curl -X POST http://localhost:5000/api/compare_mgf_files \
   -F "file1=@file1.mgf" \
   -F "file2=@file2.mgf" \
   -F "layer=CHARGES_INDEPENDENCE"

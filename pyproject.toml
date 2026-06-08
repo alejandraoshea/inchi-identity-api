@@ -17,6 +17,7 @@ dependencies = [
     "flask",
     "flask-cors",
     "pillow",
+    rdkit,
     "py3Dmol",
 ]
 
