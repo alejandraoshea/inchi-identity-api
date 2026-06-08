@@ -17,8 +17,9 @@ dependencies = [
     "flask",
     "flask-cors",
     "pillow",
-    rdkit,
+    "rdkit",
     "py3Dmol",
+    "inchi-identity",
 ]
 
 [build-system]
