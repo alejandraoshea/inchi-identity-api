@@ -6,9 +6,6 @@ hierarchical molecular comparison framework for interactive and programmatic use
 Any system capable of making HTTP requests can submit molecular identifiers, retrieve 
 equivalence profiles, and trigger MGF spectral library unification — independently of 
 the web frontend.
-
-Developed as part of a TFG at CEMBIO (Universidad San Pablo CEU).
-
 ---
 
 ## Endpoints
@@ -36,7 +33,7 @@ conda activate inchi-identity-api
 pip install -e .
 ```
 
-### InChI Trust (optional, for Layer 6)
+### InChI Trust (for Layer 6)
 
 ```bash
 export INCHITRUST_PATH=/path/to/inchi-1
