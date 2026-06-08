@@ -2,10 +2,13 @@ from flask import Blueprint, jsonify, request
 from inchi_identity.inchi.determine_levels_id import InChI
 from inchi_identity.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
 from inchi_identity.inchi.config_loader import load_config, build_config_from_layers
+from importlib.resources import files as _pkg_files
 import tempfile, traceback, os, base64
 from dotenv import load_dotenv
 
 load_dotenv()
+
+_DEFAULT_CONFIG_PATH = _pkg_files('inchi_identity') / 'configs' / 'default_config.json'
 
 inchi_comparison_routes = Blueprint("inchi_comparison_routes", __name__)
 
@@ -25,15 +28,15 @@ def compare_inchis():
         inchi1 = InChI.normalize_input(input1)
         inchi2 = InChI.normalize_input(input2)
         
-        config = load_config()
+        config = load_config(_DEFAULT_CONFIG_PATH)
         result = compare_pair(inchi1, inchi2, config)
-        
+
         return jsonify({
             "inchi_1": inchi1,
             "inchi_2": inchi2,
             "results": result["results"]
         })
-    
+
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
@@ -55,7 +58,7 @@ def compare_inchis_custom():
         inchi1 = InChI.normalize_input(input1)
         inchi2 = InChI.normalize_input(input2)
         
-        base_config = load_config()
+        base_config = load_config(_DEFAULT_CONFIG_PATH)
         config = build_config_from_layers(selected_layers, base_config)
         result = compare_pair(inchi1, inchi2, config)
         
@@ -92,7 +95,7 @@ def compare_files_api():
         mode  = data.get("mode", "pairwise")
         if not list1 or not list2:
             return jsonify({"message": "Both lists required"}), 400
-        config = load_config()
+        config = load_config(_DEFAULT_CONFIG_PATH)
         result = compare_text_files(list1, list2, config, mode=mode, only_equal=True)
         return jsonify(result)
     except Exception as e:
@@ -122,7 +125,7 @@ def compare_mgf_files_upload():
 
         output_tmp = tempfile.mktemp(suffix=".mgf")
 
-        config = load_config()
+        config = load_config(_DEFAULT_CONFIG_PATH)
         result = compare_mgf_files(tmp1_path, tmp2_path, config, layer=layer, output_mgf=output_tmp)
 
         os.unlink(tmp1_path)
