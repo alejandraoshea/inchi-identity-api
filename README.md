@@ -46,7 +46,7 @@ If not available, Layer 6 falls back to RDKit's TautomerEnumerator automatically
 ## Running
 
 ```bash
-flask --app src/api/app.py run --port 8080
+flask --app src/backend/app.py run --port 8080
 ```
 
 The API will be available at `http://localhost:8080`.
