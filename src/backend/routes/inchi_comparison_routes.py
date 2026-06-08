@@ -79,10 +79,12 @@ def get_inchi_layers():
         {"key": "isotope",            "label": "Isotope Independence"},
         {"key": "salt",               "label": "Salt Independence"},
         {"key": "charge",             "label": "Charge Independence"},
-        {"key": "double_bond",        "label": "Double Bond Independence"},
-        {"key": "cis_trans",          "label": "Cis/Trans Independence"},
+        {"key": "double_bond",         "label": "Double Bond Independence"},
+        {"key": "cis_trans",           "label": "Cis/Trans Independence"},
+        {"key": "sn_position",         "label": "sn-Position Independence"},
+        {"key": "chain_position",      "label": "Chain Position Independence"},
+        {"key": "sum_composition",     "label": "Sum Composition Independence"},
         {"key": "tautomer",           "label": "Tautomer Independence"},
-        {"key": "substituent",        "label": "Substituent Independence"}
     ])
 
 
