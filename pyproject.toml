@@ -10,6 +10,7 @@ authors = [
 
 dependencies = [
     "numpy",
+    "openbabel-wheel",
     "pandas",
     "requests",
     "openpyxl",
