@@ -10,12 +10,14 @@ authors = [
 
 dependencies = [
     "numpy",
+    "openbabel-wheel",
     "pandas",
     "requests",
     "openpyxl",
     "python-dotenv",
     "flask",
     "flask-cors",
+    "gunicorn",
     "pillow",
     "rdkit",
     "py3Dmol",
