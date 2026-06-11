@@ -99,8 +99,9 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 The API is intended to run behind Nginx on the same domain as the frontend:
 
 - `/api/` is proxied to Gunicorn on `127.0.0.1:8080`.
-- `/` redirects to the frontend entry route.
+- `/` serves the frontend `index.html`.
 - Other frontend routes are handled by the frontend static/SPA fallback.
+- HTTP requests are redirected to HTTPS.
 
 Example templates are included in:
 
@@ -130,7 +131,7 @@ sudo editor /etc/inchi-identity-api.env
 Set `CORS_ORIGINS` to the deployed frontend origin, for example:
 
 ```bash
-CORS_ORIGINS=https://test.example.com
+CORS_ORIGINS=https://metaboidentity.eps.uspceu.es
 ```
 
 3. Install and start the systemd service:
@@ -142,7 +143,7 @@ sudo systemctl enable --now inchi-identity-api
 sudo systemctl status inchi-identity-api
 ```
 
-4. Configure Nginx for the test domain:
+4. Configure Nginx for the HTTPS domain:
 
 ```bash
 sudo cp deploy/nginx/inchi-identity-api.conf /etc/nginx/sites-available/inchi-identity-api
@@ -150,18 +151,22 @@ sudo ln -s /etc/nginx/sites-available/inchi-identity-api /etc/nginx/sites-enable
 sudo editor /etc/nginx/sites-available/inchi-identity-api
 ```
 
-Update `server_name`, the frontend `root`, and the root redirect target:
+The included template uses `metaboidentity.eps.uspceu.es`, serves the frontend
+from `/var/www/inchi-identity-app`, and expects Let's Encrypt certificates at
+`/etc/letsencrypt/live/metaboidentity.eps.uspceu.es/`:
 
 ```nginx
-server_name test.example.com;
+listen 443 ssl http2;
+server_name metaboidentity.eps.uspceu.es;
 root /var/www/inchi-identity-app;
-
-location = / {
-    return 302 /pages/compare.html;
-}
+index index.html;
 
 location /api/ {
     proxy_pass http://127.0.0.1:8080;
+}
+
+location / {
+    try_files $uri $uri/ /index.html;
 }
 ```
 
@@ -175,8 +180,8 @@ sudo systemctl reload nginx
 6. Verify the deployment:
 
 ```bash
-curl https://test.example.com/api/health
-curl https://test.example.com/api/inchi_layers
+curl https://metaboidentity.eps.uspceu.es/api/health
+curl https://metaboidentity.eps.uspceu.es/api/inchi_layers
 ```
 
 The frontend remains available on the same domain outside `/api/`.
