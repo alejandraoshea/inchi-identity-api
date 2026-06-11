@@ -19,6 +19,7 @@ the web frontend.
 | POST | `/api/compare_files` | Pairwise or cross-comparison of identifier files |
 | POST | `/api/compare_mgf_files` | MGF spectral library unification |
 | POST | `/api/generate_3d` | Generate 3D SDF structure from InChI or SMILES |
+| GET | `/api/health` | Health check for reverse proxies and service monitors |
 
 ---
 
@@ -52,57 +53,133 @@ If not available, Layer 6 falls back to RDKit's TautomerEnumerator automatically
 
 ## Running
 
+### Local development
+
 ```bash
-cd src
-python3 -m backend.app
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e .
+PYTHONPATH=src python3 -m backend.app
 ```
 
-The API will be available at `http://localhost:5000`.
+The API will be available at `http://localhost:8080` by default.
+
+Runtime settings can be configured with environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8080` | Port used by the Flask development entry point |
+| `FLASK_RUN_HOST` | `127.0.0.1` | Host used by the Flask development entry point |
+| `MAX_CONTENT_LENGTH` | `26214400` | Maximum request body size in bytes |
+| `CORS_ORIGINS` | `*` | Comma-separated list of allowed frontend origins |
+| `INCHITRUST_PATH` | unset | Optional InChI Trust installation path |
+
+### Production-style local run
+
+Use Gunicorn instead of Flask's development server:
+
+```bash
+. .venv/bin/activate
+gunicorn --workers 2 --timeout 120 --bind 127.0.0.1:8080 backend.app:app
+```
+
+Run this command from the repository root so `Naming_Example.xlsx` is available to
+the `inchi-identity` dependency.
+
+### Tests
+
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+```
 
 ---
 
-## Deployment with Nginx (WSL2)
+## Deployment with Nginx and systemd
 
-To serve the frontend via Nginx while running the API locally on WSL2:
+The API is intended to run behind Nginx on the same domain as the frontend:
 
-1. Install and start Nginx inside WSL2:
+- `/api/` is proxied to Gunicorn on `127.0.0.1:8080`.
+- `/` redirects to the frontend entry route.
+- Other frontend routes are handled by the frontend static/SPA fallback.
+
+Example templates are included in:
+
+- `deploy/systemd/inchi-identity-api.service`
+- `deploy/nginx/inchi-identity-api.conf`
+- `deploy/inchi-identity-api.env.example`
+
+1. Install the API on the server:
 
 ```bash
-sudo apt install nginx -y
-sudo service nginx start
+sudo mkdir -p /var/www/inchi-identity-api
+sudo chown -R "$USER":"$USER" /var/www/inchi-identity-api
+git clone https://github.com/alejandraoshea/inchi-identity-api.git /var/www/inchi-identity-api
+cd /var/www/inchi-identity-api
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e .
 ```
 
-2. Configure Nginx as a reverse proxy in `/etc/nginx/sites-available/default`:
+2. Configure the service environment:
+
+```bash
+sudo cp deploy/inchi-identity-api.env.example /etc/inchi-identity-api.env
+sudo editor /etc/inchi-identity-api.env
+```
+
+Set `CORS_ORIGINS` to the deployed frontend origin, for example:
+
+```bash
+CORS_ORIGINS=https://test.example.com
+```
+
+3. Install and start the systemd service:
+
+```bash
+sudo cp deploy/systemd/inchi-identity-api.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now inchi-identity-api
+sudo systemctl status inchi-identity-api
+```
+
+4. Configure Nginx for the test domain:
+
+```bash
+sudo cp deploy/nginx/inchi-identity-api.conf /etc/nginx/sites-available/inchi-identity-api
+sudo ln -s /etc/nginx/sites-available/inchi-identity-api /etc/nginx/sites-enabled/inchi-identity-api
+sudo editor /etc/nginx/sites-available/inchi-identity-api
+```
+
+Update `server_name`, the frontend `root`, and the root redirect target:
 
 ```nginx
-root /var/www/html;
-index pages/compare.html;
+server_name test.example.com;
+root /var/www/inchi-identity-app;
 
-location / {
-    try_files $uri $uri/ /pages/compare.html;
+location = / {
+    return 302 /pages/compare.html;
 }
 
 location /api/ {
-    proxy_pass http://127.0.0.1:5000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
+    proxy_pass http://127.0.0.1:8080;
 }
 ```
 
-3. Reload Nginx:
+5. Reload Nginx:
 
 ```bash
-sudo nginx -t && sudo service nginx reload
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-4. Start the API:
+6. Verify the deployment:
 
 ```bash
-cd src
-python3 -m backend.app
+curl https://test.example.com/api/health
+curl https://test.example.com/api/inchi_layers
 ```
 
-The frontend will be available at `http://localhost` and all `/api/` requests will be proxied to Flask.
+The frontend remains available on the same domain outside `/api/`.
 
 ---
 
@@ -111,7 +188,7 @@ The frontend will be available at `http://localhost` and all `/api/` requests wi
 ### Full comparison
 
 ```bash
-curl -X POST http://localhost:5000/api/compare_inchis \
+curl -X POST http://localhost:8080/api/compare_inchis \
   -H "Content-Type: application/json" \
   -d '{"inchi1": "InChI=1S/C5H11NO2/...", "inchi2": "InChI=1S/C5H11NO2/..."}'
 ```
@@ -119,7 +196,7 @@ curl -X POST http://localhost:5000/api/compare_inchis \
 ### Selected layers only
 
 ```bash
-curl -X POST http://localhost:5000/api/compare_inchis_custom \
+curl -X POST http://localhost:8080/api/compare_inchis_custom \
   -H "Content-Type: application/json" \
   -d '{"inchi1": "...", "inchi2": "...", "levels": ["isotope", "salt", "charge"]}'
 ```
@@ -127,7 +204,7 @@ curl -X POST http://localhost:5000/api/compare_inchis_custom \
 ### MGF unification
 
 ```bash
-curl -X POST http://localhost:5000/api/compare_mgf_files \
+curl -X POST http://localhost:8080/api/compare_mgf_files \
   -F "file1=@file1.mgf" \
   -F "file2=@file2.mgf" \
   -F "layer=CHARGES_INDEPENDENCE"
@@ -137,8 +214,8 @@ curl -X POST http://localhost:5000/api/compare_mgf_files \
 
 ## CORS
 
-CORS is enabled by default to allow the frontend to connect from any origin during 
-development. For production, restrict allowed origins in `app.py`.
+CORS is enabled by default to allow the frontend to connect from any origin during
+development. For production, restrict allowed origins with `CORS_ORIGINS`.
 
 ---
 
