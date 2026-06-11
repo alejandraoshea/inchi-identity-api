@@ -1,0 +1,16 @@
+[Unit]
+Description=InChI Identity API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/inchi-identity-api
+EnvironmentFile=/etc/inchi-identity-api.env
+ExecStart=/var/www/inchi-identity-api/.venv/bin/gunicorn --workers 2 --timeout 120 --bind 127.0.0.1:8080 backend.app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
