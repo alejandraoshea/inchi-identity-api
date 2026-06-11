@@ -55,7 +55,8 @@ def generate_3d():
     All rendering is handled client-side by the frontend.
     """
     try:
-        input_str = request.json.get("inchi")
+        data = request.get_json(silent=True) or {}
+        input_str = data.get("inchi")
 
         inchi = normalize_to_inchi(input_str)
 
@@ -64,6 +65,9 @@ def generate_3d():
             return jsonify({"error": "Could not generate 3D conformation for the provided structure"}), 400
 
         return jsonify({"sdf": sdf, "inchi": inchi})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

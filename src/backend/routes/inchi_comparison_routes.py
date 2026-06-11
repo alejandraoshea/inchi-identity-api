@@ -1,9 +1,14 @@
+import base64
+import os
+import tempfile
+import traceback
+from contextlib import suppress
+
 from flask import Blueprint, jsonify, request
 from inchi_identity.inchi.determine_levels_id import InChI
 from inchi_identity.inchi.compare import compare_pair, compare_text_files, compare_mgf_files
 from inchi_identity.inchi.config_loader import load_config, build_config_from_layers
 from importlib.resources import files as _pkg_files
-import tempfile, traceback, os, base64
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,7 +20,7 @@ inchi_comparison_routes = Blueprint("inchi_comparison_routes", __name__)
 @inchi_comparison_routes.route("/api/compare_inchis", methods=["POST"])
 def compare_inchis():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
             return jsonify({"message": "No JSON received"}), 400
         
@@ -44,13 +49,13 @@ def compare_inchis():
 @inchi_comparison_routes.route("/api/compare_inchis_custom", methods=["POST"])
 def compare_inchis_custom():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
             return jsonify({"message": "No JSON received"}), 400
         
         input1 = data.get("inchi1", "").strip()
         input2 = data.get("inchi2", "").strip()
-        selected_layers = data.get("layers", [])
+        selected_layers = data.get("layers", data.get("levels", []))
         
         if not input1 or not input2:
             return jsonify({"message": "Missing InChIs"}), 400
@@ -91,7 +96,7 @@ def get_inchi_layers():
 @inchi_comparison_routes.route("/api/compare_files", methods=["POST"])
 def compare_files_api():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         list1 = data.get("list1", [])
         list2 = data.get("list2", [])
         mode  = data.get("mode", "pairwise")
@@ -106,6 +111,7 @@ def compare_files_api():
 
 @inchi_comparison_routes.route("/api/compare_mgf_files", methods=["POST"])
 def compare_mgf_files_upload():
+    tmp_paths = []
     try:
         if "file1" not in request.files or "file2" not in request.files:
             return jsonify({"message": "Both MGF files required"}), 400
@@ -120,18 +126,19 @@ def compare_mgf_files_upload():
         with tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".mgf") as tmp1:
             file1.save(tmp1.name)
             tmp1_path = tmp1.name
+            tmp_paths.append(tmp1_path)
 
         with tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".mgf") as tmp2:
             file2.save(tmp2.name)
             tmp2_path = tmp2.name
+            tmp_paths.append(tmp2_path)
 
-        output_tmp = tempfile.mktemp(suffix=".mgf")
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".mgf") as tmp_out:
+            output_tmp = tmp_out.name
+            tmp_paths.append(output_tmp)
 
         config = load_config(_DEFAULT_CONFIG_PATH)
         result = compare_mgf_files(tmp1_path, tmp2_path, config, layer=layer, output_mgf=output_tmp)
-
-        os.unlink(tmp1_path)
-        os.unlink(tmp2_path)
 
         old_keys = list(result.get("input_counts", {}).keys())
         for old_key in old_keys:
@@ -153,10 +160,14 @@ def compare_mgf_files_upload():
         if os.path.exists(output_tmp):
             with open(output_tmp, "rb") as f_out:
                 result["output_mgf_b64"] = base64.b64encode(f_out.read()).decode("utf-8")
-            os.unlink(output_tmp)
 
         return jsonify(result)
 
     except Exception as e:
         traceback.print_exc()
         return jsonify({"message": str(e)}), 500
+    finally:
+        for path in tmp_paths:
+            with suppress(OSError):
+                if path and os.path.exists(path):
+                    os.unlink(path)
